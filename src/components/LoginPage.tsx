@@ -3,12 +3,19 @@ import { useAuth } from '../contexts/AuthContext';
 import { LogIn } from 'lucide-react';
 
 export default function LoginPage() {
-  const [company, setCompany] = useState('');
+  const [company, setCompany] = useState('Demo');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('demo123');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+
+  const fillDemoCredentials = (type: 'hr' | 'employee') => {
+    setCompany('Demo');
+    setPassword('demo123');
+    setEmail(type === 'hr' ? 'hr@gmail.com' : 'user@gmail.com');
+    setError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +25,7 @@ export default function LoginPage() {
     const success = await login({ company, email, password });
 
     if (!success) {
-      setError('Credenziali non valide. Riprova.');
+      setError('Credenziali non valide. Usa gli account demo di Demo.');
       setLoading(false);
     }
   };
@@ -40,6 +47,23 @@ export default function LoginPage() {
             Accedi
           </h2>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+            <button
+              type="button"
+              onClick={() => fillDemoCredentials('employee')}
+              className="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-medium py-2 px-3 rounded-lg text-sm transition"
+            >
+              Usa demo Dipendente
+            </button>
+            <button
+              type="button"
+              onClick={() => fillDemoCredentials('hr')}
+              className="bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-medium py-2 px-3 rounded-lg text-sm transition"
+            >
+              Usa demo HR
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -50,7 +74,7 @@ export default function LoginPage() {
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition"
-                placeholder="Inserisci il nome dell'azienda"
+                placeholder="Demo"
                 required
               />
             </div>
@@ -100,11 +124,11 @@ export default function LoginPage() {
 
           <div className="mt-6 pt-6 border-t border-gray-200">
             <p className="text-xs text-gray-500 text-center">
-              Demo credentials:
+              Demo credentials (azienda: Demo):
               <br />
-              <span className="font-mono">Dipendente: mario@acme.it / demo123</span>
+              <span className="font-mono">Dipendente: user@gmail.com / demo123</span>
               <br />
-              <span className="font-mono">HR: hr@acme.it / hr2024</span>
+              <span className="font-mono">HR: hr@gmail.com / demo123</span>
             </p>
           </div>
         </div>

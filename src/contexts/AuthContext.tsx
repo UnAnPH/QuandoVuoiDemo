@@ -3,8 +3,8 @@ import { databases, DB_ID, USERS_COL, ID, Query } from '../lib/appwrite';
 import { User, Credentials } from '../types';
 
 const VALID_CREDENTIALS = {
-  employee: { company: 'Acme', email: 'mario@acme.it', password: 'demo123' },
-  hr: { company: 'Acme', email: 'hr@acme.it', password: 'hr2024' }
+  employee: { company: 'Demo', email: 'user@gmail.com', password: 'demo123' },
+  hr: { company: 'Demo', email: 'hr@gmail.com', password: 'demo123' }
 };
 
 interface AuthContextType {
@@ -38,24 +38,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (credentials: Credentials): Promise<boolean> => {
+    const normalizedCompany = credentials.company.trim().toLowerCase();
+    const normalizedEmail = credentials.email.trim().toLowerCase();
+
     const isEmployee =
-      credentials.email === VALID_CREDENTIALS.employee.email &&
+      normalizedEmail === VALID_CREDENTIALS.employee.email &&
       credentials.password === VALID_CREDENTIALS.employee.password &&
-      credentials.company === VALID_CREDENTIALS.employee.company;
+      normalizedCompany === VALID_CREDENTIALS.employee.company.toLowerCase();
 
     const isHR =
-      credentials.email === VALID_CREDENTIALS.hr.email &&
+      normalizedEmail === VALID_CREDENTIALS.hr.email &&
       credentials.password === VALID_CREDENTIALS.hr.password &&
-      credentials.company === VALID_CREDENTIALS.hr.company;
+      normalizedCompany === VALID_CREDENTIALS.hr.company.toLowerCase();
 
     if (!isEmployee && !isHR) return false;
 
     const userType = isEmployee ? 'employee' : 'hr';
+    const canonicalCompany = isEmployee ? VALID_CREDENTIALS.employee.company : VALID_CREDENTIALS.hr.company;
+    const canonicalEmail = isEmployee ? VALID_CREDENTIALS.employee.email : VALID_CREDENTIALS.hr.email;
 
     try {
       const existing = await databases.listDocuments(DB_ID, USERS_COL, [
-        Query.equal('email', credentials.email),
-        Query.equal('company_name', credentials.company)
+        Query.equal('email', canonicalEmail),
+        Query.equal('company_name', canonicalCompany)
       ]);
 
       let userData: User;
@@ -64,8 +69,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userData = toUser(existing.documents[0]);
       } else {
         const newDoc = await databases.createDocument(DB_ID, USERS_COL, ID.unique(), {
-          email: credentials.email,
-          company_name: credentials.company,
+          email: canonicalEmail,
+          company_name: canonicalCompany,
           user_type: userType,
           onboarding_completed: false
         });

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { databases, DB_ID, REQUESTS_COL, ID, Query } from '../lib/appwrite';
 import { Request } from '../types';
-import { Wallet, LogOut, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Wallet, LogOut, Clock, CheckCircle, AlertCircle, Loader2, Euro, TrendingUp, History } from 'lucide-react';
 
 export default function EmployeeHome() {
   const { user, logout } = useAuth();
@@ -11,7 +11,18 @@ export default function EmployeeHome() {
   const [amount, setAmount] = useState(620);
   const [loading, setLoading] = useState(false);
   const [confirmation, setConfirmation] = useState<string | null>(null);
-  const availableBalance = 1240;
+  const baseAvailableBalance = 1240;
+  const dailyGain = 76;
+  const usedAmount = requests
+    .filter((request) => request.status !== 'Erogato')
+    .reduce((sum, request) => sum + Number(request.amount), 0);
+  const availableBalance = Math.max(baseAvailableBalance - usedAmount, 120);
+
+  const getSystemStatus = (requestedAmount: number): Request['status'] => {
+    if (requestedAmount <= 300) return 'Erogato';
+    if (requestedAmount <= 700) return 'Approvato';
+    return 'In attesa';
+  };
 
   useEffect(() => {
     loadRequests();
@@ -46,7 +57,7 @@ export default function EmployeeHome() {
         user_id: user.id,
         request_number: requestNumber,
         amount,
-        status: 'In attesa'
+        status: getSystemStatus(amount)
       });
       setConfirmation(requestNumber);
       setShowRequestModal(false);
@@ -107,7 +118,7 @@ export default function EmployeeHome() {
             <p className="text-xl font-bold text-purple-600">{confirmation}</p>
           </div>
           <p className="text-sm text-gray-500 mb-6">
-            Riceverai una notifica quando la richiesta sarà approvata.
+            La valutazione viene eseguita automaticamente dal sistema, senza approvazione manuale HR.
           </p>
           <button
             onClick={() => setConfirmation(null)}
@@ -136,6 +147,30 @@ export default function EmployeeHome() {
       </header>
 
       <main className="max-w-6xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Euro rimanenti</span>
+              <Euro className="w-4 h-4 text-purple-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-800">€{availableBalance.toLocaleString('it-IT')}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Guadagno giornaliero</span>
+              <TrendingUp className="w-4 h-4 text-green-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-800">+€{dailyGain.toLocaleString('it-IT')}</p>
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-5 border border-gray-100">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-gray-600">Richieste precedenti</span>
+              <History className="w-4 h-4 text-blue-600" />
+            </div>
+            <p className="text-2xl font-bold text-gray-800">{requests.length}</p>
+          </div>
+        </div>
+
         <div className="mb-8">
           <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl p-8 text-white shadow-xl">
             <div className="flex items-center gap-3 mb-4">

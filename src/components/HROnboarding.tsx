@@ -7,10 +7,10 @@ export default function HROnboarding() {
   const [step, setStep] = useState(1);
   const { user, completeOnboarding } = useAuth();
   const [formData, setFormData] = useState({
-    ragione_sociale: 'Acme SpA',
+    ragione_sociale: 'Demo Srl',
     piva: '12345678901',
     numero_dipendenti: 50,
-    referente_hr: 'Maria Bianchi',
+    referente_hr: 'HR Demo',
     max_advance_percent: 50,
     request_frequency: 'Settimanale',
     welcome_message: 'Benvenuto in QuandoVuoi! Il tuo stipendio, quando vuoi.'
@@ -40,7 +40,7 @@ export default function HROnboarding() {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText('https://quandovuoi.it/invite/acme-12345');
+    navigator.clipboard.writeText('https://quandovuoi.it/invite/demo-12345');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -224,7 +224,7 @@ export default function HROnboarding() {
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between gap-3">
                 <code className="text-sm text-purple-700 flex-1 text-left">
-                  https://quandovuoi.it/invite/acme-12345
+                  https://quandovuoi.it/invite/demo-12345
                 </code>
                 <button
                   onClick={handleCopy}
