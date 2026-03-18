@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { databases, DB_ID, CONFIG_COL, ID, Query } from '../lib/appwrite';
 import { Building2, ChevronLeft, CheckCircle, Copy } from 'lucide-react';
 
 export default function HROnboarding() {
@@ -21,13 +21,20 @@ export default function HROnboarding() {
   const handleComplete = async () => {
     if (!user) return;
 
-    await supabase
-      .from('company_config')
-      .upsert({
+    const existing = await databases.listDocuments(DB_ID, CONFIG_COL, [
+      Query.equal('company_name', user.company_name)
+    ]);
+    if (existing.documents.length > 0) {
+      await databases.updateDocument(DB_ID, CONFIG_COL, existing.documents[0].$id, {
         company_name: user.company_name,
-        ...formData,
-        updated_at: new Date().toISOString()
+        ...formData
       });
+    } else {
+      await databases.createDocument(DB_ID, CONFIG_COL, ID.unique(), {
+        company_name: user.company_name,
+        ...formData
+      });
+    }
 
     await completeOnboarding();
   };

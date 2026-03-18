@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { databases, DB_ID, REQUESTS_COL, ID, Query } from '../lib/appwrite';
 import { Request } from '../types';
 import { Wallet, LogOut, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -20,44 +20,41 @@ export default function EmployeeHome() {
   const loadRequests = async () => {
     if (!user) return;
 
-    const { data } = await supabase
-      .from('requests')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
-
-    if (data) {
-      setRequests(data as Request[]);
-    }
+    const res = await databases.listDocuments(DB_ID, REQUESTS_COL, [
+      Query.equal('user_id', user.id),
+      Query.orderDesc('$createdAt')
+    ]);
+    setRequests(res.documents.map((d: any) => ({
+      id: d.$id,
+      user_id: d.user_id,
+      request_number: d.request_number,
+      amount: d.amount,
+      status: d.status,
+      created_at: d.$createdAt,
+      updated_at: d.$updatedAt
+    })) as Request[]);
   };
 
   const handleRequestAdvance = async () => {
     if (!user) return;
-
     setLoading(true);
-
     await new Promise(resolve => setTimeout(resolve, 2500));
-
     const requestNumber = `REQ-${Date.now().toString().slice(-6)}`;
 
-    const { data, error } = await supabase
-      .from('requests')
-      .insert({
+    try {
+      await databases.createDocument(DB_ID, REQUESTS_COL, ID.unique(), {
         user_id: user.id,
         request_number: requestNumber,
         amount,
         status: 'In attesa'
-      })
-      .select()
-      .single();
-
-    setLoading(false);
-
-    if (!error && data) {
+      });
       setConfirmation(requestNumber);
       setShowRequestModal(false);
       loadRequests();
+    } catch (e) {
+      console.error(e);
     }
+    setLoading(false);
   };
 
   const getStatusBadge = (status: string) => {

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
+import { databases, DB_ID, USERS_COL, ID, Query } from '../lib/appwrite';
 import { User, Credentials } from '../types';
 
 const VALID_CREDENTIALS = {
@@ -17,66 +17,67 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const toUser = (doc: any): User => ({
+  id: doc.$id,
+  email: doc.email,
+  company_name: doc.company_name,
+  user_type: doc.user_type,
+  onboarding_completed: doc.onboarding_completed,
+  created_at: doc.$createdAt,
+  updated_at: doc.$updatedAt
+});
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('quandovuoi_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const stored = localStorage.getItem('quandovuoi_user');
+    if (stored) setUser(JSON.parse(stored));
     setLoading(false);
   }, []);
 
   const login = async (credentials: Credentials): Promise<boolean> => {
-    const isEmployee = credentials.email === VALID_CREDENTIALS.employee.email &&
-                      credentials.password === VALID_CREDENTIALS.employee.password &&
-                      credentials.company === VALID_CREDENTIALS.employee.company;
+    const isEmployee =
+      credentials.email === VALID_CREDENTIALS.employee.email &&
+      credentials.password === VALID_CREDENTIALS.employee.password &&
+      credentials.company === VALID_CREDENTIALS.employee.company;
 
-    const isHR = credentials.email === VALID_CREDENTIALS.hr.email &&
-                credentials.password === VALID_CREDENTIALS.hr.password &&
-                credentials.company === VALID_CREDENTIALS.hr.company;
+    const isHR =
+      credentials.email === VALID_CREDENTIALS.hr.email &&
+      credentials.password === VALID_CREDENTIALS.hr.password &&
+      credentials.company === VALID_CREDENTIALS.hr.company;
 
-    if (!isEmployee && !isHR) {
-      return false;
-    }
+    if (!isEmployee && !isHR) return false;
 
     const userType = isEmployee ? 'employee' : 'hr';
 
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', credentials.email)
-      .eq('company_name', credentials.company)
-      .maybeSingle();
+    try {
+      const existing = await databases.listDocuments(DB_ID, USERS_COL, [
+        Query.equal('email', credentials.email),
+        Query.equal('company_name', credentials.company)
+      ]);
 
-    let userData: User;
+      let userData: User;
 
-    if (existingUser) {
-      userData = existingUser as User;
-    } else {
-      const { data: newUser, error } = await supabase
-        .from('users')
-        .insert({
+      if (existing.documents.length > 0) {
+        userData = toUser(existing.documents[0]);
+      } else {
+        const newDoc = await databases.createDocument(DB_ID, USERS_COL, ID.unique(), {
           email: credentials.email,
           company_name: credentials.company,
           user_type: userType,
           onboarding_completed: false
-        })
-        .select()
-        .single();
-
-      if (error || !newUser) {
-        return false;
+        });
+        userData = toUser(newDoc);
       }
 
-      userData = newUser as User;
+      setUser(userData);
+      localStorage.setItem('quandovuoi_user', JSON.stringify(userData));
+      return true;
+    } catch {
+      return false;
     }
-
-    setUser(userData);
-    localStorage.setItem('quandovuoi_user', JSON.stringify(userData));
-    return true;
   };
 
   const logout = () => {
@@ -86,19 +87,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const completeOnboarding = async () => {
     if (!user) return;
-
-    const { data, error } = await supabase
-      .from('users')
-      .update({ onboarding_completed: true, updated_at: new Date().toISOString() })
-      .eq('id', user.id)
-      .select()
-      .single();
-
-    if (!error && data) {
-      const updatedUser = data as User;
-      setUser(updatedUser);
-      localStorage.setItem('quandovuoi_user', JSON.stringify(updatedUser));
-    }
+    const updated = await databases.updateDocument(DB_ID, USERS_COL, user.id, {
+      onboarding_completed: true
+    });
+    const updatedUser = toUser(updated);
+    setUser(updatedUser);
+    localStorage.setItem('quandovuoi_user', JSON.stringify(updatedUser));
   };
 
   return (
@@ -109,9 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 }

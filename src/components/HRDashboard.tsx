@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { databases, DB_ID, REQUESTS_COL, Query } from '../lib/appwrite';
 import { Request } from '../types';
 import { TrendingUp, DollarSign, Clock, CheckCircle, LogOut } from 'lucide-react';
 
@@ -14,23 +14,23 @@ export default function HRDashboard() {
   }, []);
 
   const loadRequests = async () => {
-    const { data } = await supabase
-      .from('requests')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (data) {
-      setRequests(data as Request[]);
-    }
+    const res = await databases.listDocuments(DB_ID, REQUESTS_COL, [
+      Query.orderDesc('$createdAt')
+    ]);
+    setRequests(res.documents.map((d: any) => ({
+      id: d.$id,
+      user_id: d.user_id,
+      request_number: d.request_number,
+      amount: d.amount,
+      status: d.status,
+      created_at: d.$createdAt,
+      updated_at: d.$updatedAt
+    })) as Request[]);
     setLoading(false);
   };
 
-  const updateRequestStatus = async (id: string, status: 'In attesa' | 'Approvato' | 'Erogato') => {
-    await supabase
-      .from('requests')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', id);
-
+  const updateRequestStatus = async (id: string, status: string) => {
+    await databases.updateDocument(DB_ID, REQUESTS_COL, id, { status });
     loadRequests();
   };
 
