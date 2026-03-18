@@ -6,13 +6,12 @@ import { Building2, ChevronLeft, CheckCircle, Copy } from 'lucide-react';
 export default function HROnboarding() {
   const [step, setStep] = useState(1);
   const { user, completeOnboarding } = useAuth();
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     ragione_sociale: 'Demo Srl',
     piva: '12345678901',
     numero_dipendenti: 50,
     referente_hr: 'HR Demo',
-    max_advance_percent: 50,
-    request_frequency: 'Settimanale',
     welcome_message: 'Benvenuto in QuandoVuoi! Il tuo stipendio, quando vuoi.'
   });
 
@@ -20,23 +19,30 @@ export default function HROnboarding() {
 
   const handleComplete = async () => {
     if (!user) return;
+    setSaving(true);
 
-    const existing = await databases.listDocuments(DB_ID, CONFIG_COL, [
-      Query.equal('company_name', user.company_name)
-    ]);
-    if (existing.documents.length > 0) {
-      await databases.updateDocument(DB_ID, CONFIG_COL, existing.documents[0].$id, {
+    try {
+      const payload = {
         company_name: user.company_name,
-        ...formData
-      });
-    } else {
-      await databases.createDocument(DB_ID, CONFIG_COL, ID.unique(), {
-        company_name: user.company_name,
-        ...formData
-      });
+        ...formData,
+        max_advance_percent: 50,
+        request_frequency: 'Settimanale'
+      };
+
+      const existing = await databases.listDocuments(DB_ID, CONFIG_COL, [
+        Query.equal('company_name', user.company_name)
+      ]);
+      if (existing.documents.length > 0) {
+        await databases.updateDocument(DB_ID, CONFIG_COL, existing.documents[0].$id, payload);
+      } else {
+        await databases.createDocument(DB_ID, CONFIG_COL, ID.unique(), payload);
+      }
+    } catch {
+      // In demo mode, backend config persistence must not block dashboard access.
     }
 
     await completeOnboarding();
+    setSaving(false);
   };
 
   const handleCopy = () => {
@@ -142,42 +148,14 @@ export default function HROnboarding() {
         {step === 3 && (
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Configurazione servizio
+              Attivazione servizio
             </h2>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Percentuale massima anticipo (%)
-                </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="range"
-                    min="10"
-                    max="100"
-                    step="5"
-                    value={formData.max_advance_percent}
-                    onChange={(e) => setFormData({ ...formData, max_advance_percent: Number(e.target.value) })}
-                    className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                  />
-                  <span className="text-xl font-bold text-purple-600 w-16">
-                    {formData.max_advance_percent}%
-                  </span>
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Frequenza richieste
-                </label>
-                <select
-                  value={formData.request_frequency}
-                  onChange={(e) => setFormData({ ...formData, request_frequency: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
-                >
-                  <option>Giornaliera</option>
-                  <option>Settimanale</option>
-                  <option>Quindicinale</option>
-                  <option>Mensile</option>
-                </select>
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <p className="text-sm text-purple-800">
+                  La policy su importi e regole di anticipo viene definita centralmente dal sistema QuandoVuoi.
+                  In questa fase l'HR attiva solo il servizio per l'azienda e gestisce la lista dipendenti abilitati.
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -237,9 +215,10 @@ export default function HROnboarding() {
             </div>
             <button
               onClick={handleComplete}
+              disabled={saving}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200"
             >
-              Vai alla dashboard
+              {saving ? 'Attivazione in corso...' : 'Vai alla dashboard'}
             </button>
           </div>
         )}

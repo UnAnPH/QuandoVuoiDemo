@@ -4,6 +4,36 @@ import { databases, DB_ID, REQUESTS_COL, ID, Query } from '../lib/appwrite';
 import { Request } from '../types';
 import { Wallet, LogOut, Clock, CheckCircle, AlertCircle, Loader2, Euro, TrendingUp, History } from 'lucide-react';
 
+const DEMO_EMPLOYEE_REQUESTS: Request[] = [
+  {
+    id: 'demo-req-1',
+    user_id: 'demo-employee',
+    request_number: 'REQ-240301',
+    amount: 260,
+    status: 'Erogato',
+    created_at: '2026-03-01T09:12:00.000Z',
+    updated_at: '2026-03-01T09:12:00.000Z'
+  },
+  {
+    id: 'demo-req-2',
+    user_id: 'demo-employee',
+    request_number: 'REQ-240307',
+    amount: 420,
+    status: 'Approvato',
+    created_at: '2026-03-07T11:25:00.000Z',
+    updated_at: '2026-03-07T11:25:00.000Z'
+  },
+  {
+    id: 'demo-req-3',
+    user_id: 'demo-employee',
+    request_number: 'REQ-240315',
+    amount: 610,
+    status: 'In attesa',
+    created_at: '2026-03-15T15:40:00.000Z',
+    updated_at: '2026-03-15T15:40:00.000Z'
+  }
+];
+
 export default function EmployeeHome() {
   const { user, logout } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
@@ -28,22 +58,55 @@ export default function EmployeeHome() {
     loadRequests();
   }, [user]);
 
+  const storageKey = user ? `quandovuoi_requests_${user.id}` : '';
+
+  const setDemoRequests = () => {
+    const seeded = DEMO_EMPLOYEE_REQUESTS.map((request) => ({
+      ...request,
+      user_id: user?.id || request.user_id
+    }));
+    setRequests(seeded);
+    if (storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(seeded));
+    }
+  };
+
   const loadRequests = async () => {
     if (!user) return;
 
-    const res = await databases.listDocuments(DB_ID, REQUESTS_COL, [
-      Query.equal('user_id', user.id),
-      Query.orderDesc('$createdAt')
-    ]);
-    setRequests(res.documents.map((d: any) => ({
-      id: d.$id,
-      user_id: d.user_id,
-      request_number: d.request_number,
-      amount: d.amount,
-      status: d.status,
-      created_at: d.$createdAt,
-      updated_at: d.$updatedAt
-    })) as Request[]);
+    if (storageKey) {
+      const local = localStorage.getItem(storageKey);
+      if (local) {
+        try {
+          setRequests(JSON.parse(local) as Request[]);
+          return;
+        } catch {
+          localStorage.removeItem(storageKey);
+        }
+      }
+    }
+
+    try {
+      const res = await databases.listDocuments(DB_ID, REQUESTS_COL, [
+        Query.equal('user_id', user.id),
+        Query.orderDesc('$createdAt')
+      ]);
+      const mapped = res.documents.map((d: any) => ({
+        id: d.$id,
+        user_id: d.user_id,
+        request_number: d.request_number,
+        amount: d.amount,
+        status: d.status,
+        created_at: d.$createdAt,
+        updated_at: d.$updatedAt
+      })) as Request[];
+      setRequests(mapped);
+      if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify(mapped));
+      }
+    } catch {
+      setDemoRequests();
+    }
   };
 
   const handleRequestAdvance = async () => {
@@ -63,6 +126,23 @@ export default function EmployeeHome() {
       setShowRequestModal(false);
       loadRequests();
     } catch (e) {
+      const now = new Date().toISOString();
+      const localRequest: Request = {
+        id: `local-${Date.now()}`,
+        user_id: user.id,
+        request_number: requestNumber,
+        amount,
+        status: getSystemStatus(amount),
+        created_at: now,
+        updated_at: now
+      };
+      const updatedRequests = [localRequest, ...requests];
+      setRequests(updatedRequests);
+      if (storageKey) {
+        localStorage.setItem(storageKey, JSON.stringify(updatedRequests));
+      }
+      setConfirmation(requestNumber);
+      setShowRequestModal(false);
       console.error(e);
     }
     setLoading(false);
