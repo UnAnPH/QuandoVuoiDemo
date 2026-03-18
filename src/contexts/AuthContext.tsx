@@ -27,6 +27,19 @@ const toUser = (doc: any): User => ({
   updated_at: doc.$updatedAt
 });
 
+const createLocalDemoUser = (email: string, company: string, userType: User['user_type']): User => {
+  const now = new Date().toISOString();
+  return {
+    id: `demo-${userType}`,
+    email,
+    company_name: company,
+    user_type: userType,
+    onboarding_completed: false,
+    created_at: now,
+    updated_at: now
+  };
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +94,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('quandovuoi_user', JSON.stringify(userData));
       return true;
     } catch {
-      return false;
+      const localDemoUser = createLocalDemoUser(canonicalEmail, canonicalCompany, userType);
+      const stored = localStorage.getItem('quandovuoi_user');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as User;
+          if (parsed.email === canonicalEmail && parsed.company_name === canonicalCompany) {
+            localDemoUser.onboarding_completed = parsed.onboarding_completed;
+            localDemoUser.created_at = parsed.created_at;
+            localDemoUser.updated_at = parsed.updated_at;
+          }
+        } catch {
+          // Keep default local demo user values when stored data is invalid.
+        }
+      }
+
+      setUser(localDemoUser);
+      localStorage.setItem('quandovuoi_user', JSON.stringify(localDemoUser));
+      return true;
     }
   };
 
@@ -92,12 +122,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const completeOnboarding = async () => {
     if (!user) return;
-    const updated = await databases.updateDocument(DB_ID, USERS_COL, user.id, {
-      onboarding_completed: true
-    });
-    const updatedUser = toUser(updated);
-    setUser(updatedUser);
-    localStorage.setItem('quandovuoi_user', JSON.stringify(updatedUser));
+    try {
+      const updated = await databases.updateDocument(DB_ID, USERS_COL, user.id, {
+        onboarding_completed: true
+      });
+      const updatedUser = toUser(updated);
+      setUser(updatedUser);
+      localStorage.setItem('quandovuoi_user', JSON.stringify(updatedUser));
+    } catch {
+      const updatedUser: User = {
+        ...user,
+        onboarding_completed: true,
+        updated_at: new Date().toISOString()
+      };
+      setUser(updatedUser);
+      localStorage.setItem('quandovuoi_user', JSON.stringify(updatedUser));
+    }
   };
 
   return (
