@@ -1,6 +1,20 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LogIn } from 'lucide-react';
+import logoDark from '../Favicon (Dark).png';
+
+const DEMO_CREDENTIALS = {
+  employee: {
+    company: 'Demo',
+    email: 'user@gmail.com',
+    password: 'demo123'
+  },
+  hr: {
+    company: 'Demo',
+    email: 'hr@gmail.com',
+    password: 'demo123'
+  }
+};
 
 export default function LoginPage() {
   const [company, setCompany] = useState('Demo');
@@ -11,9 +25,10 @@ export default function LoginPage() {
   const { login } = useAuth();
 
   const fillDemoCredentials = (type: 'hr' | 'employee') => {
-    setCompany('Demo');
-    setPassword('demo123');
-    setEmail(type === 'hr' ? 'hr@gmail.com' : 'user@gmail.com');
+    const selected = DEMO_CREDENTIALS[type];
+    setCompany(selected.company);
+    setEmail(selected.email);
+    setPassword(selected.password);
     setError('');
   };
 
@@ -34,7 +49,12 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-white flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-purple-600 mb-2">QuandoVuoi</h1>
+          <img
+            src={logoDark}
+            alt="Logo QuandoVuoi"
+            className="w-12 h-12 mx-auto mb-3 rounded-lg shadow-sm"
+          />
+          <h1 className="text-4xl font-bold text-purple-600 mb-2 tracking-tight">QuandoVuoi</h1>
           <p className="text-gray-600">Il tuo stipendio, quando vuoi</p>
         </div>
 
@@ -121,16 +141,6 @@ export default function LoginPage() {
               {loading ? 'Accesso in corso...' : 'Accedi'}
             </button>
           </form>
-
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
-              Demo credentials (azienda: Demo):
-              <br />
-              <span className="font-mono">Dipendente: user@gmail.com / demo123</span>
-              <br />
-              <span className="font-mono">HR: hr@gmail.com / demo123</span>
-            </p>
-          </div>
         </div>
       </div>
     </div>
