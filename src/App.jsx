@@ -197,7 +197,14 @@ const ToastContainer = ({ message }) => {
   );
 };
 
-const CircularProgress = ({ value, max, size = 200, strokeWidth = 12 }) => {
+const CircularProgress = ({
+  value,
+  max,
+  size = 200,
+  strokeWidth = 12,
+  trackStroke = 'rgba(255,255,255,0.15)',
+  progressStroke = 'var(--rosa-200)'
+}) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const targetOffset = circumference - (value / max) * circumference;
@@ -212,8 +219,8 @@ const CircularProgress = ({ value, max, size = 200, strokeWidth = 12 }) => {
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="transform -rotate-90">
-        <circle stroke="rgba(255,255,255,0.15)" fill="transparent" strokeWidth={strokeWidth} r={radius} cx={size / 2} cy={size / 2} />
-        <circle stroke="var(--rosa-200)" fill="transparent" strokeWidth={strokeWidth} strokeLinecap="round" r={radius} cx={size / 2} cy={size / 2}
+        <circle stroke={trackStroke} fill="transparent" strokeWidth={strokeWidth} r={radius} cx={size / 2} cy={size / 2} />
+        <circle stroke={progressStroke} fill="transparent" strokeWidth={strokeWidth} strokeLinecap="round" r={radius} cx={size / 2} cy={size / 2}
           style={{ strokeDasharray: circumference, strokeDashoffset: offset, transition: 'stroke-dashoffset 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}
         />
       </svg>
@@ -327,7 +334,7 @@ const EmployeeOnboarding = ({ onComplete, state }) => {
   return (
     <div className="flex-1 bg-[var(--rosa-50)] flex flex-col relative overflow-hidden h-full">
       <div className="absolute top-0 w-full p-6 flex justify-end z-20">
-        <button onClick={onComplete} className={cn("text-[13px] hover:underline", step === 1 || step === 3 ? "text-white/80" : "text-[var(--grafite)]")}>
+        <button onClick={onComplete} className={cn("text-[13px] hover:underline", step === 1 ? "text-white/80" : "text-[var(--grafite)]")}>
           Salta introduzione &rarr;
         </button>
       </div>
@@ -393,35 +400,42 @@ const EmployeeOnboarding = ({ onComplete, state }) => {
         )}
 
         {step === 3 && (
-          <div className="flex-1 bg-[var(--nero)] text-white p-6 flex flex-col pt-20 animate-fade-up">
+          <div className="flex-1 bg-[var(--pervinca-50)] text-[var(--carbone)] p-6 flex flex-col pt-20 animate-fade-up">
             <div className="flex-1 flex flex-col items-center justify-center text-center -mt-8">
               <div className="relative mb-8">
-                <CircularProgress value={76} max={100} size={220} strokeWidth={8} />
+                <CircularProgress
+                  value={76}
+                  max={100}
+                  size={220}
+                  strokeWidth={8}
+                  trackStroke="var(--ardesia-100)"
+                  progressStroke="var(--rosa-400)"
+                />
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <div className="text-[48px] font-bold leading-none mb-1">
+                  <div className="text-[48px] font-bold leading-none mb-1 text-[var(--nero)]">
                     <AnimatedBalance />
                   </div>
-                  <div className="text-[14px] text-[var(--rosa-300)] font-medium uppercase tracking-wider">disponibili</div>
+                  <div className="text-[14px] text-[var(--rosa-500)] font-medium uppercase tracking-wider">disponibili</div>
                 </div>
               </div>
 
               <div className="w-full mb-8">
-                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mb-3">
-                  <div className="h-full bg-[var(--rosa-200)] transition-all duration-[1500ms] ease-out" style={{ width: '76%' }} />
+                <div className="h-1.5 w-full bg-[var(--ardesia-100)] rounded-full overflow-hidden mb-3">
+                  <div className="h-full bg-[var(--rosa-300)] transition-all duration-[1500ms] ease-out" style={{ width: '76%' }} />
                 </div>
                 <div className="text-[13px] text-[var(--grafite)]">
                   16 giorni lavorati su 21 · marzo 2026
                 </div>
               </div>
 
-              <div className="flex w-full bg-white/5 rounded-[16px] p-4 mb-6">
-                <div className="flex-1 border-r border-white/10">
+              <div className="flex w-full bg-white rounded-[16px] p-4 mb-6 border border-[var(--ardesia-100)]">
+                <div className="flex-1 border-r border-[var(--ardesia-100)]">
                   <div className="text-[12px] text-[var(--grafite)] mb-1">Stipendio netto maturato</div>
-                  <div className="font-bold">€2.438</div>
+                  <div className="font-bold text-[var(--nero)]">€2.438</div>
                 </div>
                 <div className="flex-1">
                   <div className="text-[12px] text-[var(--grafite)] mb-1">Disponibile ora</div>
-                  <div className="font-bold text-[var(--rosa-200)]">€1.219</div>
+                  <div className="font-bold text-[var(--rosa-500)]">€1.219</div>
                 </div>
               </div>
               
@@ -431,7 +445,7 @@ const EmployeeOnboarding = ({ onComplete, state }) => {
             </div>
 
             <div className="flex gap-3 mt-auto mb-12 relative z-30">
-               <button onClick={prevStep} className="px-6 h-[52px] rounded-[12px] border border-white/20 text-white font-medium hover:bg-white/10 transition-colors">
+               <button onClick={prevStep} className="px-6 h-[52px] rounded-[12px] border border-[var(--ardesia-100)] text-[var(--carbone)] font-medium hover:bg-white transition-colors">
                 &larr;
               </button>
               <button onClick={nextStep} className="flex-1 gradient-rosa text-white h-[52px] rounded-[12px] font-bold transition-transform hover:-translate-y-px shadow-sm">
@@ -1252,34 +1266,34 @@ const HROnboarding = ({ onComplete }) => {
     <div className="w-full max-w-[560px] h-full md:h-[844px] bg-white rounded-none md:rounded-[24px] border-0 md:border border-[var(--ardesia-100)] shadow-none md:shadow-xl overflow-hidden min-h-0">
       <div className="h-full min-h-0 flex flex-col relative">
         <div className="absolute top-0 w-full p-6 flex justify-end z-20">
-          <button onClick={onComplete} className={cn('text-[13px] hover:underline', step === 1 ? 'text-white/80' : 'text-[var(--grafite)]')}>
+          <button onClick={onComplete} className="text-[13px] text-[var(--grafite)] hover:underline">
             Salta introduzione &rarr;
           </button>
         </div>
 
         {step === 1 && (
-          <div className="flex-1 text-white p-8 flex flex-col justify-center animate-fade-up bg-gradient-to-br from-[var(--rosa-400)] via-[var(--pervinca-500)] to-[var(--acqua-500)]">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-8">
-              <Building2 size={32} className="text-white" />
+          <div className="flex-1 bg-[var(--pervinca-50)] p-8 flex flex-col justify-center animate-fade-up">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--pervinca-100)] flex items-center justify-center mb-8">
+              <Building2 size={32} className="text-[var(--pervinca-500)]" />
             </div>
-            <h1 className="text-[36px] font-bold leading-tight mb-2">Benvenuta, Maria.</h1>
-            <h2 className="text-[20px] font-medium text-white/90 mb-6">Zero approvazioni. Zero burocrazia.</h2>
-            <p className="text-[16px] leading-relaxed text-white/85 mb-10">
+            <h1 className="text-[36px] font-bold leading-tight mb-2 text-[var(--nero)]">Benvenuta, Maria.</h1>
+            <h2 className="text-[20px] font-medium text-[var(--rosa-500)] mb-6">Zero approvazioni. Zero burocrazia.</h2>
+            <p className="text-[16px] leading-relaxed text-[var(--carbone)] mb-10">
               Attivi il servizio per i tuoi dipendenti. Noi gestiamo tutto il resto automaticamente.
             </p>
 
             <div className="flex gap-3 mb-12">
-              <div className="flex-1 bg-white/20 backdrop-blur-sm border border-white/25 p-4 rounded-[12px]">
-                <div className="text-[24px] font-bold mb-1">15 min</div>
-                <div className="text-[12px] text-white/80">tempo medio di setup</div>
+              <div className="flex-1 bg-white border border-[var(--pervinca-100)] p-4 rounded-[12px]">
+                <div className="text-[24px] font-bold mb-1 text-[var(--nero)]">15 min</div>
+                <div className="text-[12px] text-[var(--grafite)]">tempo medio di setup</div>
               </div>
-              <div className="flex-1 bg-white/20 backdrop-blur-sm border border-white/25 p-4 rounded-[12px]">
-                <div className="text-[24px] font-bold mb-1">0</div>
-                <div className="text-[12px] text-white/80">approvazioni manuali</div>
+              <div className="flex-1 bg-white border border-[var(--pervinca-100)] p-4 rounded-[12px]">
+                <div className="text-[24px] font-bold mb-1 text-[var(--nero)]">0</div>
+                <div className="text-[12px] text-[var(--grafite)]">approvazioni manuali</div>
               </div>
             </div>
 
-            <button onClick={nextStep} className="mt-auto w-full bg-white text-[var(--nero)] h-[52px] rounded-[12px] font-bold text-[16px] hover:bg-[var(--fumo)] transition-colors">
+            <button onClick={nextStep} className="mt-auto w-full gradient-rosa text-white h-[52px] rounded-[12px] font-bold text-[16px] hover:opacity-95 transition-opacity">
               Configura il servizio &rarr;
             </button>
           </div>
