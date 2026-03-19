@@ -1,0 +1,28 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="60" y1="40" x2="1140" y2="590" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B1222" />
+      <stop offset="1" stop-color="#112B3C" />
+    </linearGradient>
+    <linearGradient id="accent" x1="220" y1="548" x2="980" y2="548" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F191A1" />
+      <stop offset="1" stop-color="#5DD4CB" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(940 90) rotate(136.5) scale(520 300)">
+      <stop stop-color="#2E6EE7" stop-opacity="0.42" />
+      <stop offset="1" stop-color="#2E6EE7" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+
+  <rect x="72" y="166" width="182" height="182" rx="42" fill="#FFFFFF" fill-opacity="0.11" stroke="#FFFFFF" stroke-opacity="0.32" />
+  <image href="/favicon-dark.png" x="104" y="198" width="118" height="118" preserveAspectRatio="xMidYMid meet" />
+
+  <text x="296" y="262" fill="#F6FAFF" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="96" font-weight="800">QuandoVuoi</text>
+  <text x="296" y="334" fill="#DDE9FF" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="44" font-weight="600">Anticipo stipendio per il tuo team</text>
+
+  <path d="M252 566C368 538 485 522 604 522C722 522 841 538 958 566" stroke="url(#accent)" stroke-width="14" stroke-linecap="round" />
+  <path d="M212 593C342 562 472 546 604 546C736 546 867 562 998 593" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="9" stroke-linecap="round" />
+</svg>

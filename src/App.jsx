@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   UserCircle, Building2, Zap, Shield, RefreshCw, TrendingUp, List, 
-  Calendar, Check, Search, 
+  Calendar, Check, Search, Download, Plus, ShieldCheck, Copy,
   LogOut, Users, Lock,
   Receipt, Edit2, ChevronLeft, ChevronRight, Bell, User, BarChart2
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import logoDark from './Favicon (Dark).png';
 
 // --- STYLES & GLOBALS ---
@@ -22,7 +23,7 @@ const globalStyles = `
 
   body {
     font-family: 'Inter', sans-serif;
-    background-color: var(--nero);
+    background-color: var(--fumo);
     color: var(--carbone);
     -webkit-font-smoothing: antialiased;
     margin: 0;
@@ -155,6 +156,32 @@ const INITIAL_EMP_STATE = {
     { id: 3, type: 'payday', title: 'Busta paga in arrivo', body: 'Il 10 aprile riceverai €620 su ••••3456', time: '2 giorni fa', read: true }
   ]
 };
+
+const HR_EMPLOYEES_SEED = [
+  { id: 1, name: 'Mario Rossi', role: 'Sviluppatore Senior', salary: 3200, active: true, lastWithdrawal: '18 mar 2026' },
+  { id: 2, name: 'Luigi Bianchi', role: 'Contabile', salary: 2600, active: true, lastWithdrawal: '15 mar 2026' },
+  { id: 3, name: 'Anna Verdi', role: 'Designer', salary: 2900, active: true, lastWithdrawal: '17 mar 2026' },
+  { id: 4, name: 'Marco Neri', role: 'Commerciale', salary: 2400, active: true, lastWithdrawal: '12 mar 2026' },
+  { id: 5, name: 'Sara Russo', role: 'HR Specialist', salary: 2700, active: true, lastWithdrawal: '10 mar 2026' },
+  { id: 6, name: 'Davide Conti', role: 'Magazziniere', salary: 2100, active: true, lastWithdrawal: '14 mar 2026' },
+  { id: 7, name: 'Francesca Moro', role: 'Marketing Manager', salary: 3100, active: true, lastWithdrawal: '16 mar 2026' },
+  { id: 8, name: 'Luca Ferrari', role: 'Tecnico IT', salary: 2800, active: false, lastWithdrawal: null },
+  { id: 9, name: 'Elena Ricci', role: 'Receptionist', salary: 2200, active: false, lastWithdrawal: null },
+  { id: 10, name: 'Giovanni Sala', role: 'Direttore Vendite', salary: 4100, active: false, lastWithdrawal: null },
+  { id: 11, name: 'Chiara Esposito', role: 'UX Designer', salary: 2850, active: true, lastWithdrawal: '13 mar 2026' },
+  { id: 12, name: 'Roberto Marini', role: 'Responsabile Logistica', salary: 3000, active: true, lastWithdrawal: '11 mar 2026' },
+  { id: 13, name: 'Valentina Bruno', role: 'Assistente Contabile', salary: 2300, active: true, lastWithdrawal: '19 mar 2026' },
+  { id: 14, name: 'Andrea Colombo', role: 'Sviluppatore Junior', salary: 2200, active: true, lastWithdrawal: '17 mar 2026' },
+  { id: 15, name: 'Stefania Greco', role: 'Customer Success', salary: 2500, active: false, lastWithdrawal: null },
+  { id: 16, name: 'Matteo Romano', role: 'Data Analyst', salary: 3200, active: false, lastWithdrawal: null },
+  { id: 17, name: 'Alessia Fontana', role: 'Office Manager', salary: 2400, active: true, lastWithdrawal: '15 mar 2026' },
+  { id: 18, name: 'Simone De Luca', role: 'Tecnico Assistenza', salary: 2150, active: false, lastWithdrawal: null },
+  { id: 19, name: 'Paola Gallo', role: 'Social Media Manager', salary: 2350, active: false, lastWithdrawal: null },
+  { id: 20, name: 'Claudio Serra', role: 'Responsabile Acquisti', salary: 2900, active: true, lastWithdrawal: '14 mar 2026' },
+  { id: 21, name: 'Martina Rizzo', role: 'Graphic Designer', salary: 2600, active: true, lastWithdrawal: '16 mar 2026' },
+  { id: 22, name: 'Filippo Caruso', role: 'Project Manager', salary: 3400, active: false, lastWithdrawal: null },
+  { id: 23, name: 'Nadia Ferretti', role: 'Segreteria', salary: 2050, active: false, lastWithdrawal: null }
+];
 
 // --- SHARED COMPONENTS ---
 const ToastContainer = ({ message }) => {
@@ -554,7 +581,7 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobile 
     <div className={cn(
       "mx-auto bg-[var(--fumo)] overflow-hidden shadow-2xl relative flex flex-col font-sans transition-all duration-500",
       isMobile 
-        ? "w-full max-w-[390px] h-[100dvh] md:h-[844px] rounded-none md:rounded-[32px] border-0 md:border-[8px] border-[var(--nero)]" 
+        ? "w-full max-w-[390px] h-[calc(100dvh-96px)] md:h-[844px] rounded-none md:rounded-[32px] border-0 md:border-[8px] border-[var(--nero)]" 
         : "w-full max-w-4xl h-[100dvh] md:h-[844px] rounded-none md:rounded-[32px] border-0 md:border border-[var(--ardesia-100)]"
     )}>
       
@@ -1111,37 +1138,198 @@ const EmployeeCalendar = ({ history }) => {
 };
 
 
+// --- HR ONBOARDING ---
+const HROnboarding = ({ onComplete }) => {
+  const [step, setStep] = useState(1);
+  const [copied, setCopied] = useState(false);
+  const [toggles, setToggles] = useState(HR_EMPLOYEES_SEED.map((employee) => employee.active));
+
+  const nextStep = () => setStep((current) => Math.min(current + 1, 4));
+  const prevStep = () => setStep((current) => Math.max(current - 1, 1));
+
+  const handleToggle = (index) => {
+    setToggles((current) => {
+      const next = [...current];
+      next[index] = !next[index];
+      return next;
+    });
+  };
+
+  const activeCount = toggles.filter(Boolean).length;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText('https://app.quandovuoi.it/join/acme-k7x2');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="w-full max-w-[560px] h-[calc(100dvh-32px)] md:h-[844px] bg-white rounded-[24px] border border-[var(--ardesia-100)] shadow-xl overflow-hidden">
+      <div className="h-full flex flex-col relative">
+        <div className="absolute top-0 w-full p-6 flex justify-end z-20">
+          <button onClick={onComplete} className={cn('text-[13px] hover:underline', step === 1 ? 'text-white/80' : 'text-[var(--grafite)]')}>
+            Salta introduzione &rarr;
+          </button>
+        </div>
+
+        {step === 1 && (
+          <div className="flex-1 bg-[var(--nero)] text-white p-8 flex flex-col justify-center animate-fade-up">
+            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mb-8">
+              <Building2 size={32} className="text-white" />
+            </div>
+            <h1 className="text-[36px] font-bold leading-tight mb-2">Benvenuta, Maria.</h1>
+            <h2 className="text-[20px] font-medium text-[var(--rosa-300)] mb-6">Zero approvazioni. Zero burocrazia.</h2>
+            <p className="text-[16px] leading-relaxed opacity-80 mb-10">
+              Attivi il servizio per i tuoi dipendenti. Noi gestiamo tutto il resto automaticamente.
+            </p>
+
+            <div className="flex gap-3 mb-12">
+              <div className="flex-1 bg-[var(--antracite)] p-4 rounded-[12px]">
+                <div className="text-[24px] font-bold mb-1">15 min</div>
+                <div className="text-[12px] text-[var(--grafite)]">tempo medio di setup</div>
+              </div>
+              <div className="flex-1 bg-[var(--antracite)] p-4 rounded-[12px]">
+                <div className="text-[24px] font-bold mb-1">0</div>
+                <div className="text-[12px] text-[var(--grafite)]">approvazioni manuali</div>
+              </div>
+            </div>
+
+            <button onClick={nextStep} className="mt-auto w-full bg-white text-[var(--nero)] h-[52px] rounded-[12px] font-bold text-[16px] hover:bg-[var(--fumo)] transition-colors">
+              Configura il servizio &rarr;
+            </button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className="flex-1 bg-[var(--ardesia-50)] p-8 flex flex-col pt-20 animate-fade-up">
+            <h2 className="text-[24px] font-bold text-[var(--nero)] mb-6">Dati aziendali</h2>
+
+            <div className="bg-white p-6 rounded-[16px] shadow-sm space-y-4 mb-6">
+              <div>
+                <label className="block text-[12px] font-medium text-[var(--grafite)] mb-1">Ragione sociale</label>
+                <input type="text" defaultValue="Acme SpA" className="w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] px-3 py-2.5" />
+              </div>
+              <div>
+                <label className="block text-[12px] font-medium text-[var(--grafite)] mb-1">Partita IVA</label>
+                <input type="text" defaultValue="IT12345678901" className="w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] px-3 py-2.5" />
+              </div>
+              <div>
+                <label className="block text-[12px] font-medium text-[var(--grafite)] mb-1">Referente HR</label>
+                <input type="text" defaultValue="Maria Bianchi" className="w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] px-3 py-2.5" />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-auto">
+              <button onClick={prevStep} className="px-6 h-[52px] rounded-[12px] border border-[var(--ardesia-300)] text-[var(--carbone)] bg-white">
+                &larr; Indietro
+              </button>
+              <button onClick={nextStep} className="flex-1 gradient-rosa text-white h-[52px] rounded-[12px] font-bold">
+                Continua &rarr;
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className="flex-1 bg-white p-6 flex flex-col pt-16 animate-fade-up">
+            <h2 className="text-[24px] font-bold text-[var(--nero)] mb-1">Chi puo usare QuandoVuoi?</h2>
+            <p className="text-[13px] text-[var(--grafite)] mb-6">Puoi modificarlo in qualsiasi momento dalla dashboard.</p>
+
+            <div className="flex justify-between items-center bg-[var(--ardesia-50)] p-3 rounded-[12px] mb-4">
+              <span className="text-[13px] font-medium text-[var(--carbone)]">{activeCount} su {HR_EMPLOYEES_SEED.length} selezionati</span>
+              <button onClick={() => setToggles(Array(HR_EMPLOYEES_SEED.length).fill(true))} className="text-[13px] font-bold text-[var(--rosa-500)]">
+                Attiva tutti
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar -mx-2 px-2 pb-4">
+              {HR_EMPLOYEES_SEED.map((employee, index) => (
+                <div key={employee.id} className="flex items-center justify-between p-3 hover:bg-[var(--rosa-50)] rounded-[12px]" onClick={() => handleToggle(index)}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[var(--ardesia-100)] text-[var(--ardesia-500)] flex items-center justify-center text-[12px] font-bold">
+                      {employee.name.split(' ').map((name) => name[0]).join('')}
+                    </div>
+                    <div>
+                      <div className="text-[14px] font-bold text-[var(--nero)]">{employee.name}</div>
+                      <div className="text-[12px] text-[var(--grafite)]">{employee.role}</div>
+                    </div>
+                  </div>
+                  <div className={cn('w-11 h-6 rounded-full relative transition-colors', toggles[index] ? 'bg-[var(--acqua-300)]' : 'bg-[var(--polvere)]')}>
+                    <div className={cn('absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform shadow-sm', toggles[index] ? 'translate-x-5' : 'translate-x-0')} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-4 pt-4 border-t border-[var(--ardesia-100)]">
+              <button onClick={prevStep} className="px-6 h-[52px] rounded-[12px] border border-[var(--ardesia-100)] text-[var(--carbone)]">
+                &larr; Indietro
+              </button>
+              <button onClick={nextStep} className="flex-1 gradient-rosa text-white h-[52px] rounded-[12px] font-bold">
+                Attiva servizio &rarr;
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="flex-1 bg-[var(--acqua-50)] p-8 flex flex-col justify-center animate-fade-up text-center relative z-10">
+            <div className="w-24 h-24 mx-auto mb-8 relative">
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 52 52">
+                <circle className="text-[var(--acqua-100)]" cx="26" cy="26" r="25" fill="currentColor" />
+                <path className="animate-check text-[var(--acqua-500)]" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+              </svg>
+            </div>
+            <h2 className="text-[28px] font-bold text-[var(--nero)] mb-3 leading-tight">Servizio attivo per {activeCount} dipendenti.</h2>
+            <p className="text-[15px] text-[var(--carbone)] mb-10">I dipendenti riceveranno un invito via email.</p>
+
+            <div className="bg-white p-4 rounded-[16px] shadow-sm mb-10 text-left">
+              <label className="block text-[12px] font-bold text-[var(--grafite)] mb-2 uppercase tracking-wider">Link invito</label>
+              <div className="flex gap-2">
+                <div className="flex-1 bg-[var(--fumo)] text-[13px] text-[var(--carbone)] p-3 rounded-[10px] overflow-hidden text-ellipsis whitespace-nowrap font-mono">
+                  https://app.quandovuoi.it/join/acme-k7x2
+                </div>
+                <button onClick={handleCopy} className="bg-[var(--rosa-100)] text-[var(--rosa-500)] px-4 rounded-[10px] font-bold text-[13px] hover:bg-[var(--rosa-200)] transition-colors flex items-center gap-1">
+                  <Copy size={16} /> {copied ? 'Copiato' : 'Copia'}
+                </button>
+              </div>
+            </div>
+
+            <button onClick={onComplete} className="w-full bg-[var(--nero)] text-white h-[52px] rounded-[12px] font-bold">
+              Vai alla dashboard &rarr;
+            </button>
+          </div>
+        )}
+
+        <div className="absolute bottom-4 left-0 w-full flex justify-center gap-2 pb-safe pointer-events-none z-0">
+          {[1, 2, 3, 4].map((index) => (
+            <div key={index} className={cn('h-2 rounded-full transition-all duration-300', step === index ? 'w-6 bg-[var(--rosa-500)]' : 'w-2 bg-[var(--ardesia-300)]')} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- HR DASHBOARD ---
 const HRDashboard = ({ onLogout }) => {
-  const [employees, setEmployees] = useState([
-    { id: 1, name: 'Mario Rossi', role: 'Sviluppatore Senior', salary: 3200, active: true, lastWithdrawal: '18 mar 2026' },
-    { id: 2, name: 'Luigi Bianchi', role: 'Contabile', salary: 2600, active: true, lastWithdrawal: '15 mar 2026' },
-    { id: 3, name: 'Anna Verdi', role: 'Designer', salary: 2900, active: true, lastWithdrawal: '17 mar 2026' },
-    { id: 4, name: 'Marco Neri', role: 'Commerciale', salary: 2400, active: true, lastWithdrawal: '12 mar 2026' },
-    { id: 5, name: 'Sara Russo', role: 'HR Specialist', salary: 2700, active: true, lastWithdrawal: '10 mar 2026' },
-    { id: 6, name: 'Davide Conti', role: 'Magazziniere', salary: 2100, active: true, lastWithdrawal: '14 mar 2026' },
-    { id: 7, name: 'Francesca Moro', role: 'Marketing Manager', salary: 3100, active: true, lastWithdrawal: '16 mar 2026' },
-    { id: 8, name: 'Luca Ferrari', role: 'Tecnico IT', salary: 2800, active: false, lastWithdrawal: null },
-    { id: 9, name: 'Elena Ricci', role: 'Receptionist', salary: 2200, active: false, lastWithdrawal: null },
-    { id: 10, name: 'Giovanni Sala', role: 'Direttore Vendite', salary: 4100, active: false, lastWithdrawal: null },
-    { id: 11, name: 'Chiara Esposito', role: 'UX Designer', salary: 2850, active: true, lastWithdrawal: '13 mar 2026' },
-    { id: 12, name: 'Roberto Marini', role: 'Responsabile Logistica', salary: 3000, active: true, lastWithdrawal: '11 mar 2026' },
-    { id: 13, name: 'Valentina Bruno', role: 'Assistente Contabile', salary: 2300, active: true, lastWithdrawal: '19 mar 2026' },
-    { id: 14, name: 'Andrea Colombo', role: 'Sviluppatore Junior', salary: 2200, active: true, lastWithdrawal: '17 mar 2026' },
-    { id: 15, name: 'Stefania Greco', role: 'Customer Success', salary: 2500, active: false, lastWithdrawal: null },
-    { id: 16, name: 'Matteo Romano', role: 'Data Analyst', salary: 3200, active: false, lastWithdrawal: null },
-    { id: 17, name: 'Alessia Fontana', role: 'Office Manager', salary: 2400, active: true, lastWithdrawal: '15 mar 2026' },
-    { id: 18, name: 'Simone De Luca', role: 'Tecnico Assistenza', salary: 2150, active: false, lastWithdrawal: null },
-    { id: 19, name: 'Paola Gallo', role: 'Social Media Manager', salary: 2350, active: false, lastWithdrawal: null },
-    { id: 20, name: 'Claudio Serra', role: 'Responsabile Acquisti', salary: 2900, active: true, lastWithdrawal: '14 mar 2026' },
-    { id: 21, name: 'Martina Rizzo', role: 'Graphic Designer', salary: 2600, active: true, lastWithdrawal: '16 mar 2026' },
-    { id: 22, name: 'Filippo Caruso', role: 'Project Manager', salary: 3400, active: false, lastWithdrawal: null },
-    { id: 23, name: 'Nadia Ferretti', role: 'Segreteria', salary: 2050, active: false, lastWithdrawal: null }
-  ]);
-  
+  const [employees, setEmployees] = useState(HR_EMPLOYEES_SEED);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all'); 
   const [currentPage, setCurrentPage] = useState(1);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [importFeedback, setImportFeedback] = useState('');
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    role: '',
+    salary: ''
+  });
+  const fileInputRef = useRef(null);
   const rowsPerPage = 10;
 
   useEffect(() => {
@@ -1150,6 +1338,83 @@ const HRDashboard = ({ onLogout }) => {
 
   const activeCount = employees.filter(e => e.active).length;
   const toggleStatus = (id) => setEmployees(emps => emps.map(e => e.id === id ? { ...e, active: !e.active } : e));
+
+  const handleOpenFilePicker = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const parseEmployeeRow = (row) => {
+    const firstName = String(row.nome || row.name || row.first_name || '').trim();
+    const lastName = String(row.cognome || row.surname || row.last_name || '').trim();
+    const fullName = String(row.full_name || row.employee || '').trim();
+    const role = String(row.ruolo || row.role || row.department || 'Dipendente').trim() || 'Dipendente';
+    const salaryRaw = row.stipendio || row.salary || row.net_salary;
+    const salary = Number(salaryRaw) || 0;
+    const name = fullName || `${firstName} ${lastName}`.trim();
+    if (!name) return null;
+
+    return {
+      id: Date.now() + Math.floor(Math.random() * 10000),
+      name,
+      role,
+      salary,
+      active: false,
+      invited: true,
+      lastWithdrawal: null
+    };
+  };
+
+  const handleImportFile = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[firstSheetName];
+      const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+      const parsedEmployees = rows
+        .map(parseEmployeeRow)
+        .filter(Boolean)
+        .filter((employee) => !employees.some((existing) => existing.name.toLowerCase() === employee.name.toLowerCase()));
+
+      if (parsedEmployees.length === 0) {
+        setImportFeedback('Nessun dipendente valido trovato nel file.');
+      } else {
+        setEmployees((current) => [...parsedEmployees, ...current]);
+        setImportFeedback(`${parsedEmployees.length} dipendenti importati con successo.`);
+      }
+    } catch {
+      setImportFeedback('Import non riuscito. Usa un file Excel o CSV valido.');
+    } finally {
+      event.target.value = '';
+    }
+  };
+
+  const handleAddEmployee = () => {
+    const fullName = `${formData.firstName} ${formData.lastName}`.trim();
+    if (!fullName || !formData.role) return;
+
+    const salary = Number(formData.salary) || 0;
+    setEmployees((current) => [
+      {
+        id: Date.now(),
+        name: fullName,
+        role: formData.role,
+        salary,
+        active: false,
+        invited: true,
+        lastWithdrawal: null
+      },
+      ...current
+    ]);
+    setFormData({ firstName: '', lastName: '', role: '', salary: '' });
+    setShowAddModal(false);
+  };
 
   const filteredEmployees = employees.filter(e => {
     const searchLower = search.toLowerCase();
@@ -1215,7 +1480,7 @@ const HRDashboard = ({ onLogout }) => {
           <div className="lg:col-span-1 bg-[var(--pervinca-50)] rounded-[16px] p-6 shadow-sm flex flex-col justify-between border border-[var(--pervinca-100)]">
              <div className="flex justify-between items-start mb-4">
                 <span className="text-[11px] text-[var(--carbone)] font-bold uppercase tracking-wider">Prelievi questo periodo</span>
-                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><Zap className="text-[var(--pervinca-500)]" size={16} /></div>
+                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm"><ShieldCheck className="text-[var(--pervinca-500)]" size={16} /></div>
              </div>
              <div>
                 <div className="text-[32px] font-bold text-[var(--nero)] leading-none mb-1">12</div>
@@ -1228,8 +1493,8 @@ const HRDashboard = ({ onLogout }) => {
                 <h3 className="text-[18px] font-bold text-[var(--nero)] mb-0.5">Crescita di adozione</h3>
                 <p className="text-[13px] text-[var(--grafite)]">Dipendenti attivi nel tempo · Acme SpA</p>
              </div>
-             <div className="flex-1 relative min-h-[140px] mt-4">
-                <svg width="100%" height="100%" viewBox="0 0 400 140" preserveAspectRatio="none">
+             <div className="flex-1 relative min-h-[180px] mt-4">
+                <svg width="100%" height="100%" viewBox="0 0 400 160" preserveAspectRatio="none">
                   <defs>
                     <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--acqua-500)" stopOpacity="0.4" />
@@ -1238,21 +1503,21 @@ const HRDashboard = ({ onLogout }) => {
                   </defs>
                   {[0, 1, 2, 3, 4].map(i => (
                     <g key={`grid-y-${i}`}>
-                      <line x1="20" y1={10 + i*30} x2="380" y2={10 + i*30} stroke="var(--ardesia-100)" strokeWidth="1" />
-                      <text x="15" y={14 + i*30} textAnchor="end" fontSize="10" fill="var(--grafite)">{16 - i*4}</text>
+                      <line x1="20" y1={20 + i*24} x2="380" y2={20 + i*24} stroke="var(--ardesia-100)" strokeWidth="1" />
+                      <text x="15" y={24 + i*24} textAnchor="end" fontSize="10" fill="var(--grafite)">{16 - i*4}</text>
                     </g>
                   ))}
-                  <path d="M 40,100 L 100,92.5 L 160,70 L 220,77.5 L 280,40 L 340,25 L 340,130 L 40,130 Z" fill="url(#chartGradient)" />
-                  <path d="M 40,100 L 100,92.5 L 160,70 L 220,77.5 L 280,40 L 340,25" fill="none" stroke="var(--acqua-500)" strokeWidth="2.5" />
+                  <path d="M 40,116 L 100,108 L 160,84 L 220,92 L 280,52 L 340,36 L 340,128 L 40,128 Z" fill="url(#chartGradient)" />
+                  <path d="M 40,116 L 100,108 L 160,84 L 220,92 L 280,52 L 340,36" fill="none" stroke="var(--acqua-500)" strokeWidth="2.5" />
                   
                   {[
-                    {x: 40, y: 100, label: 'Ott'}, {x: 100, y: 92.5, label: 'Nov'},
-                    {x: 160, y: 70, label: 'Dic'}, {x: 220, y: 77.5, label: 'Gen'},
-                    {x: 280, y: 40, label: 'Feb'}, {x: 340, y: 25, label: 'Mar'}
+                    {x: 40, y: 116, label: 'Ott'}, {x: 100, y: 108, label: 'Nov'},
+                    {x: 160, y: 84, label: 'Dic'}, {x: 220, y: 92, label: 'Gen'},
+                    {x: 280, y: 52, label: 'Feb'}, {x: 340, y: 36, label: 'Mar'}
                   ].map((pt, i) => (
                     <g key={`pt-${i}`}>
                       <circle cx={pt.x} cy={pt.y} r="4" fill="var(--acqua-500)" stroke="white" strokeWidth="1.5" />
-                      <text x={pt.x} y="145" textAnchor="middle" fontSize="10" fill="var(--grafite)">{pt.label}</text>
+                      <text x={pt.x} y="150" textAnchor="middle" fontSize="10" fill="var(--grafite)">{pt.label}</text>
                     </g>
                   ))}
                   <g transform="translate(285, 0)">
@@ -1272,7 +1537,33 @@ const HRDashboard = ({ onLogout }) => {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--grafite)]" size={18} />
                 <input type="text" placeholder="Cerca dipendente..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] pl-10 pr-4 py-2 text-[14px] focus:outline-none focus:border-[var(--rosa-300)]" />
               </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={handleOpenFilePicker}
+                  className="px-4 py-2 border-2 border-[var(--rosa-200)] text-[var(--rosa-500)] bg-white rounded-[10px] font-bold text-[14px] flex items-center gap-2 hover:bg-[var(--rosa-50)] transition-colors"
+                >
+                  <Download size={16} /> <span className="hidden sm:inline">Importa Excel</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(true)}
+                  className="px-4 py-2 gradient-rosa text-white rounded-[10px] font-bold text-[14px] flex items-center gap-2 hover:shadow-md transition-shadow"
+                >
+                  <Plus size={16} /> Aggiungi
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  className="hidden"
+                  onChange={handleImportFile}
+                />
+              </div>
             </div>
+            {importFeedback ? (
+              <p className="text-[13px] text-[var(--grafite)] mb-4">{importFeedback}</p>
+            ) : null}
             <div className="flex bg-[var(--fumo)] p-1 rounded-[10px] inline-flex">
               <button onClick={()=>setFilter('all')} className={cn("px-4 py-1.5 rounded-[8px] text-[13px] font-semibold transition-colors", filter==='all' ? "bg-[var(--nero)] text-white shadow-sm" : "text-[var(--grafite)]")}>Tutti · {employees.length}</button>
               <button onClick={()=>setFilter('active')} className={cn("px-4 py-1.5 rounded-[8px] text-[13px] font-semibold transition-colors", filter==='active' ? "bg-[var(--nero)] text-white shadow-sm" : "text-[var(--grafite)]")}>Attivi · {activeCount}</button>
@@ -1365,6 +1656,72 @@ const HRDashboard = ({ onLogout }) => {
 
         </div>
       </main>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-[var(--nero)]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-[18px] border border-[var(--ardesia-100)] shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[18px] font-bold text-[var(--nero)]">Aggiungi dipendente</h3>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="text-[var(--grafite)] hover:text-[var(--nero)]"
+                aria-label="Chiudi"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input
+                type="text"
+                placeholder="Nome"
+                value={formData.firstName}
+                onChange={(e) => setFormData((prev) => ({ ...prev, firstName: e.target.value }))}
+                className="w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] px-3 py-2 text-[14px] focus:outline-none focus:border-[var(--rosa-300)]"
+              />
+              <input
+                type="text"
+                placeholder="Cognome"
+                value={formData.lastName}
+                onChange={(e) => setFormData((prev) => ({ ...prev, lastName: e.target.value }))}
+                className="w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] px-3 py-2 text-[14px] focus:outline-none focus:border-[var(--rosa-300)]"
+              />
+              <input
+                type="text"
+                placeholder="Ruolo"
+                value={formData.role}
+                onChange={(e) => setFormData((prev) => ({ ...prev, role: e.target.value }))}
+                className="w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] px-3 py-2 text-[14px] focus:outline-none focus:border-[var(--rosa-300)]"
+              />
+              <input
+                type="number"
+                placeholder="Stipendio netto"
+                value={formData.salary}
+                onChange={(e) => setFormData((prev) => ({ ...prev, salary: e.target.value }))}
+                className="w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] px-3 py-2 text-[14px] focus:outline-none focus:border-[var(--rosa-300)]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowAddModal(false)}
+                className="px-4 py-2 border border-[var(--ardesia-100)] text-[var(--grafite)] rounded-[10px] text-[14px] font-semibold hover:bg-[var(--fumo)]"
+              >
+                Annulla
+              </button>
+              <button
+                type="button"
+                onClick={handleAddEmployee}
+                className="px-4 py-2 gradient-rosa text-white rounded-[10px] text-[14px] font-bold hover:shadow-md transition-shadow"
+              >
+                Salva
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1417,32 +1774,32 @@ export default function App() {
 
   // --- DEMO PRESENTATION WRAPPER ---
   return (
-    <div className="font-sans min-h-screen bg-[var(--nero)] flex flex-col relative">
+    <div className="font-sans min-h-screen bg-[var(--fumo)] flex flex-col relative">
       <style>{globalStyles}</style>
       
       {/* Demo View Toggle (Visible only when simulating the employee app) */}
       {currentView.startsWith('emp') && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
-          <span className="text-[11px] font-bold text-white/50 uppercase tracking-widest">Visualizza come:</span>
-          <div className="bg-white/10 p-1 rounded-full flex backdrop-blur-md border border-white/10 shadow-lg">
-             <button onClick={() => setDemoMode('emp-mobile')} className={cn("px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors flex items-center gap-2", demoMode === 'emp-mobile' ? "bg-white text-[var(--nero)] shadow-sm" : "text-white/70 hover:text-white")}>
+          <span className="text-[11px] font-bold text-[var(--grafite)] uppercase tracking-widest">Visualizza come:</span>
+          <div className="bg-white p-1 rounded-full flex border border-[var(--ardesia-100)] shadow-lg">
+             <button onClick={() => setDemoMode('emp-mobile')} className={cn("px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors flex items-center gap-2", demoMode === 'emp-mobile' ? "bg-[var(--nero)] text-white shadow-sm" : "text-[var(--grafite)] hover:text-[var(--nero)]")}>
                📱 Mobile
              </button>
-             <button onClick={() => setDemoMode('emp-desktop')} className={cn("px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors flex items-center gap-2", demoMode === 'emp-desktop' ? "bg-white text-[var(--nero)] shadow-sm" : "text-white/70 hover:text-white")}>
+             <button onClick={() => setDemoMode('emp-desktop')} className={cn("px-4 py-1.5 rounded-full text-[13px] font-bold transition-colors flex items-center gap-2", demoMode === 'emp-desktop' ? "bg-[var(--nero)] text-white shadow-sm" : "text-[var(--grafite)] hover:text-[var(--nero)]")}>
                💻 Desktop
              </button>
           </div>
         </div>
       )}
 
-      <div className="flex-1 flex items-center justify-center pt-24 pb-8 w-full overflow-hidden">
+      <div className="flex-1 flex items-center justify-center pt-20 md:pt-24 pb-3 md:pb-8 w-full overflow-hidden">
         {currentView.startsWith('emp') ? (
           <div className="w-full h-full flex items-center justify-center animate-pop-in">
              {currentView === 'emp-onboard' ? (
                <div className={cn(
                  "mx-auto bg-[var(--fumo)] overflow-hidden shadow-2xl relative flex flex-col font-sans transition-all duration-500",
                  demoMode === 'emp-mobile' 
-                   ? "w-full max-w-[390px] h-[100dvh] md:h-[844px] rounded-none md:rounded-[32px] border-0 md:border-[8px] border-[var(--nero)]" 
+                   ? "w-full max-w-[390px] h-[calc(100dvh-96px)] md:h-[844px] rounded-none md:rounded-[32px] border-0 md:border-[8px] border-[var(--nero)]" 
                    : "w-full max-w-4xl h-[100dvh] md:h-[844px] rounded-none md:rounded-[32px] border-0 md:border border-[var(--ardesia-100)]"
                )}>
                  <EmployeeOnboarding state={empState} onComplete={() => setCurrentView('emp-home')} />
@@ -1453,7 +1810,13 @@ export default function App() {
           </div>
         ) : (
           <div className="w-full h-full bg-[var(--fumo)] rounded-t-[32px] overflow-y-auto animate-fade-up shadow-[0_-20px_50px_rgba(244,191,197,0.1)]">
-             <HRDashboard onLogout={handleLogout} />
+             {currentView === 'hr-onboard' ? (
+               <div className="h-full flex items-center justify-center p-4 md:p-6">
+                 <HROnboarding onComplete={() => setCurrentView('hr-home')} />
+               </div>
+             ) : (
+               <HRDashboard onLogout={handleLogout} />
+             )}
           </div>
         )}
       </div>
