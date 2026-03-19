@@ -450,7 +450,7 @@ const EmployeeOnboarding = ({ onComplete, state }) => {
                 <div className="mt-1"><Zap className="text-[var(--acqua-500)]" size={24}/></div>
                 <div>
                   <h3 className="font-bold text-[var(--nero)] mb-1">Preleva quando vuoi</h3>
-                  <p className="text-[13px] text-[var(--carbone)] leading-relaxed">Accedi al tuo stipendio netto maturato in qualsiasi momento del mese, senza aspettare il 27.</p>
+                  <p className="text-[13px] text-[var(--carbone)] leading-relaxed">Accedi al tuo stipendio netto maturato in qualsiasi momento del mese, senza aspettare il 10.</p>
                 </div>
               </div>
               
@@ -1249,8 +1249,8 @@ const HROnboarding = ({ onComplete }) => {
   };
 
   return (
-    <div className="w-full max-w-[560px] h-full md:h-[844px] bg-white rounded-none md:rounded-[24px] border-0 md:border border-[var(--ardesia-100)] shadow-none md:shadow-xl overflow-hidden">
-      <div className="h-full flex flex-col relative">
+    <div className="w-full max-w-[560px] h-full md:h-[844px] bg-white rounded-none md:rounded-[24px] border-0 md:border border-[var(--ardesia-100)] shadow-none md:shadow-xl overflow-hidden min-h-0">
+      <div className="h-full min-h-0 flex flex-col relative">
         <div className="absolute top-0 w-full p-6 flex justify-end z-20">
           <button onClick={onComplete} className={cn('text-[13px] hover:underline', step === 1 ? 'text-white/80' : 'text-[var(--grafite)]')}>
             Salta introduzione &rarr;
@@ -1258,24 +1258,24 @@ const HROnboarding = ({ onComplete }) => {
         </div>
 
         {step === 1 && (
-          <div className="flex-1 bg-[var(--nero)] text-white p-8 flex flex-col justify-center animate-fade-up">
-            <div className="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center mb-8">
+          <div className="flex-1 text-white p-8 flex flex-col justify-center animate-fade-up bg-gradient-to-br from-[var(--rosa-400)] via-[var(--pervinca-500)] to-[var(--acqua-500)]">
+            <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-8">
               <Building2 size={32} className="text-white" />
             </div>
             <h1 className="text-[36px] font-bold leading-tight mb-2">Benvenuta, Maria.</h1>
-            <h2 className="text-[20px] font-medium text-[var(--rosa-300)] mb-6">Zero approvazioni. Zero burocrazia.</h2>
-            <p className="text-[16px] leading-relaxed opacity-80 mb-10">
+            <h2 className="text-[20px] font-medium text-white/90 mb-6">Zero approvazioni. Zero burocrazia.</h2>
+            <p className="text-[16px] leading-relaxed text-white/85 mb-10">
               Attivi il servizio per i tuoi dipendenti. Noi gestiamo tutto il resto automaticamente.
             </p>
 
             <div className="flex gap-3 mb-12">
-              <div className="flex-1 bg-[var(--antracite)] p-4 rounded-[12px]">
+              <div className="flex-1 bg-white/20 backdrop-blur-sm border border-white/25 p-4 rounded-[12px]">
                 <div className="text-[24px] font-bold mb-1">15 min</div>
-                <div className="text-[12px] text-[var(--grafite)]">tempo medio di setup</div>
+                <div className="text-[12px] text-white/80">tempo medio di setup</div>
               </div>
-              <div className="flex-1 bg-[var(--antracite)] p-4 rounded-[12px]">
+              <div className="flex-1 bg-white/20 backdrop-blur-sm border border-white/25 p-4 rounded-[12px]">
                 <div className="text-[24px] font-bold mb-1">0</div>
-                <div className="text-[12px] text-[var(--grafite)]">approvazioni manuali</div>
+                <div className="text-[12px] text-white/80">approvazioni manuali</div>
               </div>
             </div>
 
@@ -1316,7 +1316,7 @@ const HROnboarding = ({ onComplete }) => {
         )}
 
         {step === 3 && (
-          <div className="flex-1 bg-white p-6 flex flex-col pt-16 animate-fade-up">
+          <div className="flex-1 min-h-0 bg-white p-6 flex flex-col pt-16 animate-fade-up">
             <h2 className="text-[24px] font-bold text-[var(--nero)] mb-1">Chi puo usare QuandoVuoi?</h2>
             <p className="text-[13px] text-[var(--grafite)] mb-6">Puoi modificarlo in qualsiasi momento dalla dashboard.</p>
 
@@ -1327,7 +1327,7 @@ const HROnboarding = ({ onComplete }) => {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar -mx-2 px-2 pb-4">
+            <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar -mx-2 px-2 pb-8 [overscroll-behavior:contain]">
               {HR_EMPLOYEES_SEED.map((employee, index) => (
                 <div key={employee.id} className="flex items-center justify-between p-3 hover:bg-[var(--rosa-50)] rounded-[12px]" onClick={() => handleToggle(index)}>
                   <div className="flex items-center gap-3">
