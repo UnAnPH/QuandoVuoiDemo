@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   UserCircle, Building2, Zap, Shield, RefreshCw, TrendingUp, List, 
   Calendar, Check, Search, Download, Plus, ShieldCheck, Copy,
-  LogOut, Users, Lock,
+  LogOut, Users, Lock, X,
   Receipt, Edit2, ChevronLeft, ChevronRight, Bell, User, BarChart2
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -145,6 +145,7 @@ const INITIAL_EMP_STATE = {
   salary: 3200,
   iban: 'IT00 X000 0000 0000 0000 0003 456',
   history: [
+    { id: 'REQ-2621', date: '24 mar 2026', amount: 220, status: 'Programmato' },
     { id: 'REQ-2618', date: '18 mar 2026', amount: 620, status: 'In elaborazione' },
     { id: 'REQ-2614', date: '6 mar 2026', amount: 380, status: 'Erogato' },
     { id: 'REQ-2610', date: '19 feb 2026', amount: 380, status: 'Erogato' },
@@ -227,12 +228,12 @@ const LoginView = ({ onLogin }) => {
   const [selected, setSelected] = useState(null);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--nero)] text-[var(--carbone)]">
-      <div className="bg-white rounded-[20px] shadow-2xl p-8 max-w-[480px] w-full animate-fade-up border border-white/10">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[var(--rosa-50)] text-[var(--carbone)]">
+      <div className="bg-white rounded-[20px] shadow-[0_2px_16px_rgba(15,13,12,0.07)] p-8 max-w-[480px] w-full animate-fade-up">
         
         <div className="text-center mb-10">
           <h1 className="text-[28px] font-bold text-[var(--nero)] mb-2">QuandoVuoi</h1>
-          <p className="text-[var(--grafite)]">Il tuo stipendio, quando vuoi.</p>
+          <p className="text-[var(--grafite)]">Anticipa lo stipendio netto, senza interessi.</p>
         </div>
 
         <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--grafite)] mb-4 text-center">
@@ -338,10 +339,10 @@ const EmployeeOnboarding = ({ onComplete, state }) => {
               <Zap size={32} className="text-white" />
             </div>
             <h1 className="text-[38px] font-bold leading-tight mb-2">Ciao, Mario!</h1>
-            <h2 className="text-[24px] font-medium opacity-90 mb-6">Il tuo stipendio è qui.</h2>
+            <h2 className="text-[24px] font-medium opacity-90 mb-6">Anticipa lo stipendio netto, senza interessi.</h2>
             <p className="text-[16px] leading-relaxed opacity-80 mb-12">
-              Hai già guadagnato parte del tuo stipendio questo mese.<br/>
-              QuandoVuoi ti dà accesso immediato, quando ne hai bisogno.
+              Anticipa parte della tua busta paga netta, i soldi arrivano subito sul tuo conto.<br/>
+              Il rimborso avviene in automatico. Niente ansia, niente interessi.
             </p>
             <div className="mt-auto mb-12 relative z-30">
               <button onClick={nextStep} className="w-full bg-white text-[var(--rosa-500)] h-[52px] rounded-[12px] font-bold text-[16px] hover:bg-[var(--rosa-50)] transition-colors">
@@ -365,7 +366,7 @@ const EmployeeOnboarding = ({ onComplete, state }) => {
                 { i: '👤', l: 'Nome', v: 'Mario Rossi' },
                 { i: '🏢', l: 'Azienda', v: 'Acme SpA' },
                 { i: '💼', l: 'Ruolo', v: 'Sviluppatore Senior' },
-                { i: '💰', l: 'Stipendio', v: '€3.200/mese' },
+                { i: '💰', l: 'Stipendio netto', v: '€3.200/mese' },
                 { i: '🏦', l: 'IBAN', v: `••••${state.iban.slice(-4)}` }
               ].map((row, idx) => (
                 <div key={idx} className="flex items-center p-4 bg-[var(--rosa-50)] rounded-[12px]">
@@ -415,7 +416,7 @@ const EmployeeOnboarding = ({ onComplete, state }) => {
 
               <div className="flex w-full bg-white/5 rounded-[16px] p-4 mb-6">
                 <div className="flex-1 border-r border-white/10">
-                  <div className="text-[12px] text-[var(--grafite)] mb-1">Stipendio maturato</div>
+                  <div className="text-[12px] text-[var(--grafite)] mb-1">Stipendio netto maturato</div>
                   <div className="font-bold">€2.438</div>
                 </div>
                 <div className="flex-1">
@@ -449,7 +450,7 @@ const EmployeeOnboarding = ({ onComplete, state }) => {
                 <div className="mt-1"><Zap className="text-[var(--acqua-500)]" size={24}/></div>
                 <div>
                   <h3 className="font-bold text-[var(--nero)] mb-1">Preleva quando vuoi</h3>
-                  <p className="text-[13px] text-[var(--carbone)] leading-relaxed">Accedi al tuo stipendio maturato in qualsiasi momento del mese, senza aspettare il 27.</p>
+                  <p className="text-[13px] text-[var(--carbone)] leading-relaxed">Accedi al tuo stipendio netto maturato in qualsiasi momento del mese, senza aspettare il 27.</p>
                 </div>
               </div>
               
@@ -739,7 +740,7 @@ const TabPanoramica = ({ state }) => {
           <Receipt size={16} /> Riepilogo busta paga
         </h3>
         <div className="flex justify-between mb-2">
-          <span className="text-[13px] text-[var(--grafite)]">Stipendio lordo</span>
+          <span className="text-[13px] text-[var(--grafite)]">Stipendio netto</span>
           <span className="text-[13px] text-[var(--carbone)] font-medium">€2.000</span>
         </div>
         <div className="flex justify-between mb-4">
@@ -1034,7 +1035,7 @@ const TabProfilo = ({ state, onEditIban, onLogout }) => (
       </div>
       <div className="flex items-center p-3 rounded-[12px] mb-1">
         <Receipt size={20} className="text-[var(--rosa-400)] shrink-0 mr-3" />
-        <span className="text-[13px] text-[var(--grafite)] w-20">Stipendio</span>
+        <span className="text-[13px] text-[var(--grafite)] w-20">Stipendio netto</span>
         <span className="text-[14px] font-bold text-[var(--nero)] flex-1 text-right">€3.200/mese</span>
       </div>
       <div className="flex items-center p-3 rounded-[12px] mb-1 group cursor-pointer" onClick={onEditIban}>
@@ -1061,13 +1062,19 @@ const TabProfilo = ({ state, onEditIban, onLogout }) => (
 
 // --- EMPLOYEE CALENDAR (Shared) ---
 const EmployeeCalendar = ({ history }) => {
-  const [monthIdx, setMonthIdx] = useState(2); 
+  const [monthIdx, setMonthIdx] = useState(1);
+  const [selectedDayDetails, setSelectedDayDetails] = useState(null);
   const monthsData = [
-    { name: 'Gennaio 2026', days: 31, offset: 3, id: 'gen 2026' }, 
-    { name: 'Febbraio 2026', days: 28, offset: 6, id: 'feb 2026' }, 
+    { name: 'Gennaio 2026', days: 31, offset: 2, id: 'gen 2026', short: 'gen' },
+    { name: 'Febbraio 2026', days: 28, offset: 5, id: 'feb 2026', short: 'feb' },
     { name: 'Marzo 2026', days: 31, offset: 6, id: 'mar 2026' },
-    { name: 'Aprile 2026', days: 30, offset: 2, id: 'apr 2026' }   
+    { name: 'Aprile 2026', days: 30, offset: 2, id: 'apr 2026' }
   ];
+  const paydayByMonth = {
+    'feb 2026': 10,
+    'mar 2026': 10,
+    'apr 2026': 10
+  };
   
   const currentMonth = monthsData[monthIdx];
   const daysArray = Array.from({length: currentMonth.days}, (_, i) => i + 1);
@@ -1079,9 +1086,22 @@ const EmployeeCalendar = ({ history }) => {
 
   const prevMonth = () => setMonthIdx(Math.max(0, monthIdx - 1));
   const nextMonth = () => setMonthIdx(Math.min(3, monthIdx + 1));
+  const closeDetails = () => setSelectedDayDetails(null);
+
+  const openDayDetails = (day, monthId, matchDays, isPayday) => {
+    const monthShort = monthId.split(' ')[0];
+    const dateLabel = `${day} ${monthShort} 2026`;
+    setSelectedDayDetails({
+      day,
+      monthId,
+      dateLabel,
+      isPayday,
+      requests: matchDays
+    });
+  };
 
   return (
-    <div className="bg-white rounded-[20px] shadow-sm p-5 animate-fade-up">
+    <div className="bg-white rounded-[20px] shadow-sm p-5 animate-fade-up relative">
       <div className="flex justify-between items-center mb-6">
         <button onClick={prevMonth} disabled={monthIdx === 0} className="p-1.5 text-[var(--grafite)] hover:bg-[var(--fumo)] rounded-full transition-colors disabled:opacity-30"><ChevronLeft size={20}/></button>
         <h3 className="text-[16px] font-bold text-[var(--nero)]">{currentMonth.name}</h3>
@@ -1095,13 +1115,14 @@ const EmployeeCalendar = ({ history }) => {
         {blanksArray.map(b => <div key={`blank-${b}`} className="h-10"></div>)}
         {daysArray.map(d => {
           const isToday = currentMonth.id === 'mar 2026' && d === 19;
-          const isPayday = d === 10 && currentMonth.id === 'apr 2026';
+          const isPayday = paydayByMonth[currentMonth.id] === d;
           const isWorked = monthIdx < 2 ? true : d <= 16;
           const isWeekend = ((d + currentMonth.offset - 1) % 7) >= 5;
 
           const matchDays = history.filter(h => h.date.startsWith(`${d} ${currentMonth.id.split(' ')[0]}`));
           const hasErogato = matchDays.some(h => h.status === 'Erogato' || h.status === 'In elaborazione');
           const hasProgrammato = matchDays.some(h => h.status === 'Programmato');
+          const hasActionableEvent = matchDays.length > 0 || isPayday;
 
           let bgClass = "bg-transparent";
           if (hasErogato) bgClass = "bg-[var(--rosa-200)]";
@@ -1114,12 +1135,22 @@ const EmployeeCalendar = ({ history }) => {
           if (isToday) textClass = "font-bold text-[var(--nero)]";
 
           return (
-            <div key={d} className={cn("h-10 rounded-[10px] flex flex-col items-center justify-center relative", bgClass, isToday && "border-[1.5px] border-[var(--nero)]")}>
+            <button
+              key={d}
+              type="button"
+              onClick={() => hasActionableEvent && openDayDetails(d, currentMonth.id, matchDays, isPayday)}
+              className={cn(
+                "h-10 rounded-[10px] flex flex-col items-center justify-center relative",
+                bgClass,
+                isToday && "border-[1.5px] border-[var(--nero)]",
+                hasActionableEvent ? "cursor-pointer hover:brightness-95" : "cursor-default"
+              )}
+            >
               <span className={cn("text-[13px]", textClass, isToday && "font-bold")}>{d}</span>
               {hasErogato && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-[var(--rosa-500)]" />}
               {hasProgrammato && <div className="absolute bottom-1 w-1 h-1 rounded-full bg-[var(--pervinca-500)]" />}
               {isPayday && <div className="absolute bottom-[1px] text-[8px]">💰</div>}
-            </div>
+            </button>
           );
         })}
       </div>
@@ -1131,8 +1162,58 @@ const EmployeeCalendar = ({ history }) => {
       </div>
       
       <div className="text-center text-[12px] font-medium text-[var(--carbone)] bg-[var(--ardesia-50)] p-2.5 rounded-[10px]">
-        {monthHistory.length} prelievi · €{totalWithdrawn}
+        {monthHistory.length} richieste · erogato {formatEur(totalWithdrawn)}
       </div>
+
+      {selectedDayDetails && (
+        <div className="absolute inset-0 z-30 flex items-end sm:items-center justify-center">
+          <button type="button" className="absolute inset-0 bg-[var(--nero)]/45" onClick={closeDetails} aria-label="Chiudi dettagli" />
+          <div className="relative w-full sm:w-[420px] bg-white rounded-t-[20px] sm:rounded-[16px] p-5 shadow-2xl animate-slide-up">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h4 className="text-[18px] font-bold text-[var(--nero)]">Dettaglio {selectedDayDetails.dateLabel}</h4>
+                <p className="text-[12px] text-[var(--grafite)]">Richieste e stato della giornata</p>
+              </div>
+              <button type="button" onClick={closeDetails} className="w-8 h-8 rounded-full bg-[var(--fumo)] text-[var(--grafite)] hover:bg-[var(--ardesia-100)] flex items-center justify-center" aria-label="Chiudi">
+                <X size={16} />
+              </button>
+            </div>
+
+            {selectedDayDetails.isPayday && (
+              <div className="mb-3 p-3 rounded-[10px] bg-[var(--acqua-50)] border border-[var(--acqua-100)] text-[13px] text-[var(--carbone)]">
+                💰 Giorno busta paga: accredito dello stipendio netto.
+              </div>
+            )}
+
+            {selectedDayDetails.requests.length === 0 ? (
+              <p className="text-[13px] text-[var(--grafite)]">Nessuna richiesta registrata in questa data.</p>
+            ) : (
+              <div className="space-y-2 mb-4">
+                {selectedDayDetails.requests.map((request) => (
+                  <div key={request.id} className="p-3 rounded-[10px] border border-[var(--ardesia-100)] bg-[var(--fumo)]">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[12px] font-mono text-[var(--grafite)]">{request.id}</span>
+                      <span className={cn(
+                        "text-[11px] font-bold px-2 py-0.5 rounded-full",
+                        request.status === 'Programmato' ? "bg-[var(--pervinca-100)] text-[var(--pervinca-500)]" :
+                        request.status === 'In elaborazione' ? "bg-[var(--rosa-100)] text-[var(--rosa-500)]" :
+                        "bg-[var(--acqua-100)] text-[var(--acqua-500)]"
+                      )}>{request.status}</span>
+                    </div>
+                    <div className="text-[15px] font-bold text-[var(--nero)]">{formatEur(request.amount)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <button type="button" onClick={closeDetails} className="px-4 h-10 rounded-[10px] gradient-rosa text-white font-bold text-[13px]">
+                Chiudi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -1168,7 +1249,7 @@ const HROnboarding = ({ onComplete }) => {
   };
 
   return (
-    <div className="w-full max-w-[560px] h-[calc(100dvh-32px)] md:h-[844px] bg-white rounded-[24px] border border-[var(--ardesia-100)] shadow-xl overflow-hidden">
+    <div className="w-full max-w-[560px] h-full md:h-[844px] bg-white rounded-none md:rounded-[24px] border-0 md:border border-[var(--ardesia-100)] shadow-none md:shadow-xl overflow-hidden">
       <div className="h-full flex flex-col relative">
         <div className="absolute top-0 w-full p-6 flex justify-end z-20">
           <button onClick={onComplete} className={cn('text-[13px] hover:underline', step === 1 ? 'text-white/80' : 'text-[var(--grafite)]')}>
@@ -1575,7 +1656,7 @@ const HRDashboard = ({ onLogout }) => {
               <thead>
                 <tr className="bg-[var(--ardesia-50)]">
                   <th className="py-3 px-6 text-[11px] font-bold text-[var(--grafite)] uppercase">Dipendente</th>
-                  <th className="py-3 px-6 text-[11px] font-bold text-[var(--grafite)] uppercase">Stipendio</th>
+                  <th className="py-3 px-6 text-[11px] font-bold text-[var(--grafite)] uppercase">Stipendio netto</th>
                   <th className="py-3 px-6 text-[11px] font-bold text-[var(--grafite)] uppercase">Stato</th>
                   <th className="py-3 px-6 text-[11px] font-bold text-[var(--grafite)] uppercase text-right">Azioni</th>
                 </tr>
@@ -1792,7 +1873,14 @@ export default function App() {
         </div>
       )}
 
-      <div className="flex-1 flex items-center justify-center pt-20 md:pt-24 pb-3 md:pb-8 w-full overflow-hidden">
+      <div
+        className={cn(
+          "flex-1 flex justify-center w-full overflow-hidden",
+          currentView.startsWith('emp')
+            ? "items-center pt-20 md:pt-24 pb-3 md:pb-8"
+            : "items-start pt-0 pb-0"
+        )}
+      >
         {currentView.startsWith('emp') ? (
           <div className="w-full h-full flex items-center justify-center animate-pop-in">
              {currentView === 'emp-onboard' ? (
@@ -1811,7 +1899,7 @@ export default function App() {
         ) : (
           <div className="w-full h-full bg-[var(--fumo)] rounded-t-[32px] overflow-y-auto animate-fade-up shadow-[0_-20px_50px_rgba(244,191,197,0.1)]">
              {currentView === 'hr-onboard' ? (
-               <div className="h-full flex items-center justify-center p-4 md:p-6">
+               <div className="h-full md:h-auto flex items-stretch md:items-center justify-center p-0 md:p-6 overflow-y-auto">
                  <HROnboarding onComplete={() => setCurrentView('hr-home')} />
                </div>
              ) : (

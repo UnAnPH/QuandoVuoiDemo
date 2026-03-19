@@ -18,10 +18,11 @@
   <rect width="1200" height="630" fill="url(#glow)" />
 
   <rect x="72" y="166" width="182" height="182" rx="42" fill="#FFFFFF" fill-opacity="0.11" stroke="#FFFFFF" stroke-opacity="0.32" />
-  <image href="/favicon-dark.png" x="104" y="198" width="118" height="118" preserveAspectRatio="xMidYMid meet" />
+  <image href="./favicon-dark.png" x="104" y="198" width="118" height="118" preserveAspectRatio="xMidYMid meet" />
 
-  <text x="296" y="262" fill="#F6FAFF" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="96" font-weight="800">QuandoVuoi</text>
-  <text x="296" y="334" fill="#DDE9FF" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="44" font-weight="600">Anticipo stipendio per il tuo team</text>
+  <text x="296" y="252" fill="#F6FAFF" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="96" font-weight="800">QuandoVuoi</text>
+  <text x="296" y="326" fill="#DDE9FF" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="44" font-weight="600">Anticipa lo stipendio netto, senza interessi</text>
+  <text x="296" y="380" fill="#C8DAF2" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="30" font-weight="500">Soldi subito sul conto. Rimborso automatico.</text>
 
   <path d="M252 566C368 538 485 522 604 522C722 522 841 538 958 566" stroke="url(#accent)" stroke-width="14" stroke-linecap="round" />
   <path d="M212 593C342 562 472 546 604 546C736 546 867 562 998 593" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="9" stroke-linecap="round" />
