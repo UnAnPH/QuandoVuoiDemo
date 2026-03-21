@@ -216,7 +216,7 @@ const INITIAL_EMP_STATE = {
   iban: 'IT00 X000 0000 0000 0000 0003 456',
   history: [
     { id: 'REQ-2621', date: '24 mar 2026', amount: 220, status: 'Programmato' },
-    { id: 'REQ-2618', date: '18 mar 2026', amount: 620, status: 'In elaborazione' },
+    { id: 'REQ-2618', date: '18 mar 2026', amount: 620, status: 'Erogato' },
     { id: 'REQ-2614', date: '6 mar 2026', amount: 380, status: 'Erogato' },
     { id: 'REQ-2610', date: '19 feb 2026', amount: 380, status: 'Erogato' },
     { id: 'REQ-2607', date: '5 feb 2026', amount: 380, status: 'Erogato' },
@@ -1415,7 +1415,7 @@ const EmployeeCalendar = ({ history }) => {
           const isWeekend = ((d + currentMonth.offset - 1) % 7) >= 5;
 
           const matchDays = history.filter(h => h.date.startsWith(`${d} ${currentMonth.id.split(' ')[0]}`));
-          const hasErogato = matchDays.some(h => h.status === 'Erogato' || h.status === 'In elaborazione');
+          const hasErogato = matchDays.some(h => h.status === 'Erogato');
           const hasProgrammato = matchDays.some(h => h.status === 'Programmato');
           const hasActionableEvent = matchDays.length > 0 || isPayday;
 
@@ -1491,7 +1491,6 @@ const EmployeeCalendar = ({ history }) => {
                       <span className={cn(
                         "text-[11px] font-bold px-2 py-0.5 rounded-full",
                         request.status === 'Programmato' ? "bg-[var(--pervinca-100)] text-[var(--pervinca-500)]" :
-                        request.status === 'In elaborazione' ? "bg-[var(--rosa-100)] text-[var(--rosa-500)]" :
                         "bg-[var(--acqua-100)] text-[var(--acqua-500)]"
                       )}>{request.status}</span>
                     </div>
