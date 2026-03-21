@@ -790,7 +790,8 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileV
 
 // --- TAB: PANORAMICA ---
 const TabPanoramica = ({ state, onOpenPreleva }) => {
-  const { available, accrued, periodLabel, daysUntilPayday, greeting, periodStart, today } = EMP_PAYROLL_SNAPSHOT;
+  const { accrued, periodLabel, daysUntilPayday, greeting, periodStart, today } = EMP_PAYROLL_SNAPSHOT;
+  const available = state.balance;
   const [displayBalance, setDisplayBalance] = useState(
     sessionAnimationPlayed ? available : Math.round(available * 0.62)
   );
@@ -846,6 +847,12 @@ const TabPanoramica = ({ state, onOpenPreleva }) => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (sessionAnimationPlayed) {
+      setDisplayBalance(available);
+    }
+  }, [available]);
 
   return (
     <div className="p-4 space-y-4 bg-white min-h-full animate-fade-up">
@@ -913,32 +920,25 @@ const MetricCard = ({ label, value }) => {
 
 
 // --- TAB: PRELEVA (CIRCULAR DIAL) ---
-const CircularDial = ({ maxAmount, amount, setAmount, onInteraction }) => {
+const CircularDial = ({
+  maxAmount,
+  amount,
+  setAmount,
+  onInteraction,
+  isEditingAmount,
+  setIsEditingAmount,
+  inputValue,
+  setInputValue,
+  inputRef
+}) => {
   const svgRef = useRef(null);
-  const inputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [hasTappedCenter, setHasTappedCenter] = useState(false);
-  const [inputValue, setInputValue] = useState(String(Math.max(0, Math.round(amount || 0))));
   const cx = 150;
   const cy = 150;
   const r = 125;
   const c = 2 * Math.PI * r;
 
   const clampedAmount = Math.max(0, Math.min(maxAmount, amount));
-
-  useEffect(() => {
-    if (!isEditing) {
-      setInputValue(String(Math.max(0, Math.round(amount || 0))));
-    }
-  }, [amount, isEditing]);
-
-  useEffect(() => {
-    if (isEditing) {
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    }
-  }, [isEditing]);
 
   const handlePointer = useCallback((e) => {
     if (!svgRef.current) return;
@@ -982,36 +982,6 @@ const CircularDial = ({ maxAmount, amount, setAmount, onInteraction }) => {
   const angleRad = (135 + progress * 270) * Math.PI / 180;
   const thumbX = cx + r * Math.cos(angleRad);
   const thumbY = cy + r * Math.sin(angleRad);
-
-  const commitEditing = () => {
-    const parsed = parseInt(String(inputValue).replace(/[^0-9]/g, ''), 10);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
-      setAmount(0);
-      setInputValue('0');
-      setIsEditing(false);
-      return;
-    }
-    const clamped = Math.max(10, Math.min(parsed, maxAmount));
-    setAmount(clamped);
-    setInputValue(String(clamped));
-    setIsEditing(false);
-  };
-
-  const handleInputChange = (value) => {
-    const cleaned = value.replace(/[^0-9]/g, '');
-    setInputValue(cleaned);
-    if (cleaned === '') {
-      setAmount(0);
-      return;
-    }
-    const parsed = parseInt(cleaned, 10);
-    if (Number.isFinite(parsed)) {
-      setAmount(parsed);
-      onInteraction();
-    }
-  };
-
-  const amountLabel = formatEur(Math.max(0, Math.round(Number.isNaN(amount) ? 0 : amount)));
 
   return (
     <div className="relative w-[300px] h-[300px] mx-auto select-none touch-none mt-2 mb-2 pointer-events-none">
@@ -1065,42 +1035,70 @@ const CircularDial = ({ maxAmount, amount, setAmount, onInteraction }) => {
         />
       </svg>
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-0">
+      <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-auto">
         <span className="text-[13px] text-[var(--grafite)] mb-1">da prelevare</span>
-        {isEditing ? (
+        {isEditingAmount ? (
           <input
             ref={inputRef}
-            type="text"
-            inputMode="decimal"
+            type="number"
+            inputMode="numeric"
             value={inputValue}
-            onChange={(e) => handleInputChange(e.target.value)}
-            onBlur={commitEditing}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') commitEditing();
+            onChange={(e) => {
+              const val = e.target.value;
+              setInputValue(val);
+              const parsed = parseInt(val, 10);
+              if (!Number.isNaN(parsed)) {
+                const clamped = Math.max(0, Math.min(parsed, maxAmount));
+                setAmount(clamped);
+              }
             }}
-            className={cn(
-              'text-[40px] font-bold leading-none tracking-tight text-center bg-transparent border-none outline-none w-[140px]',
-              amount > maxAmount ? 'text-[var(--rosa-500)]' : 'text-[var(--nero)]'
-            )}
+            onBlur={() => {
+              setIsEditingAmount(false);
+              const parsed = parseInt(inputValue, 10);
+              if (Number.isNaN(parsed) || parsed < 0) setAmount(0);
+              else setAmount(Math.min(parsed, maxAmount));
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.currentTarget.blur();
+              }
+            }}
+            style={{
+              fontSize: '40px',
+              fontWeight: 'bold',
+              color: '#0F0D0C',
+              textAlign: 'center',
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              width: '160px',
+              caretColor: '#B85A6E'
+            }}
+            autoFocus
           />
         ) : (
-          <button
-            type="button"
+          <div
             onClick={() => {
-              setIsEditing(true);
-              setHasTappedCenter(true);
-              onInteraction();
+              setIsEditingAmount(true);
+              setInputValue(String(amount));
             }}
-            className={cn(
-              'text-[40px] font-bold leading-none tracking-tight cursor-pointer hover:opacity-90 transition-opacity',
-              amount > maxAmount ? 'text-[var(--rosa-500)]' : 'text-[var(--nero)]'
-            )}
+            style={{
+              fontSize: '40px',
+              fontWeight: 'bold',
+              color: '#0F0D0C',
+              textAlign: 'center',
+              cursor: 'text',
+              userSelect: 'none',
+              padding: '8px'
+            }}
           >
-            {amountLabel}
-          </button>
+            €{amount.toLocaleString('it-IT')}
+          </div>
         )}
-        {!hasTappedCenter && !isEditing && (
-          <span className="text-[11px] text-[var(--grafite)] mt-1">Tocca per modificare</span>
+        {!isEditingAmount && (
+          <div style={{ fontSize: '11px', color: '#6B6360', marginTop: '4px' }}>
+            Tocca per modificare
+          </div>
         )}
       </div>
     </div>
@@ -1111,6 +1109,9 @@ const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
   const [amount, setAmount] = useState(Math.min(250, state.balance));
   const [flowStep, setFlowStep] = useState('amount'); // amount | timing | dates
   const [selectedDate, setSelectedDate] = useState('');
+  const [isEditingAmount, setIsEditingAmount] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const inputRef = useRef(null);
 
   const availableBalance = state.balance;
   const displayIban = `••••${state.iban.replace(/\s/g, '').slice(-4)}`;
@@ -1151,8 +1152,17 @@ const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
     }
   }, [selectedDate, dateChips]);
 
+  useEffect(() => {
+    if (isEditingAmount && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditingAmount]);
+
   const applyQuickAmount = (value) => {
     setAmount(value);
+    setIsEditingAmount(false);
+    setInputValue(String(value));
   };
 
   const performWithdraw = (isScheduled) => {
@@ -1185,6 +1195,11 @@ const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
               amount={amount}
               setAmount={setAmount}
               onInteraction={() => {}}
+              isEditingAmount={isEditingAmount}
+              setIsEditingAmount={setIsEditingAmount}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+              inputRef={inputRef}
             />
 
             <div className="grid grid-cols-2 gap-2 mb-3">
