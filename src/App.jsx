@@ -33,6 +33,12 @@ const globalStyles = `
     padding: 0;
   }
 
+  input[type=number]::-webkit-outer-spin-button,
+  input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
   .gradient-rosa {
     background: linear-gradient(135deg, var(--rosa-200), var(--rosa-300));
   }
@@ -922,14 +928,10 @@ const MetricCard = ({ label, value }) => {
 // --- TAB: PRELEVA (CIRCULAR DIAL) ---
 const CircularDial = ({
   maxAmount,
+  available,
   amount,
   setAmount,
-  onInteraction,
-  isEditingAmount,
-  setIsEditingAmount,
-  inputValue,
-  setInputValue,
-  inputRef
+  onInteraction
 }) => {
   const svgRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -1037,69 +1039,34 @@ const CircularDial = ({
 
       <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-auto">
         <span className="text-[13px] text-[var(--grafite)] mb-1">da prelevare</span>
-        {isEditingAmount ? (
-          <input
-            ref={inputRef}
-            type="number"
-            inputMode="numeric"
-            value={inputValue}
-            onChange={(e) => {
-              const val = e.target.value;
-              setInputValue(val);
-              const parsed = parseInt(val, 10);
-              if (!Number.isNaN(parsed)) {
-                const clamped = Math.max(0, Math.min(parsed, maxAmount));
-                setAmount(clamped);
-              }
-            }}
-            onBlur={() => {
-              setIsEditingAmount(false);
-              const parsed = parseInt(inputValue, 10);
-              if (Number.isNaN(parsed) || parsed < 0) setAmount(0);
-              else setAmount(Math.min(parsed, maxAmount));
-            }}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.currentTarget.blur();
-              }
-            }}
-            style={{
-              fontSize: '40px',
-              fontWeight: 'bold',
-              color: '#0F0D0C',
-              textAlign: 'center',
-              background: 'transparent',
-              border: 'none',
-              outline: 'none',
-              width: '160px',
-              caretColor: '#B85A6E'
-            }}
-            autoFocus
-          />
-        ) : (
-          <div
-            onClick={() => {
-              setIsEditingAmount(true);
-              setInputValue(String(amount));
-            }}
-            style={{
-              fontSize: '40px',
-              fontWeight: 'bold',
-              color: '#0F0D0C',
-              textAlign: 'center',
-              cursor: 'text',
-              userSelect: 'none',
-              padding: '8px'
-            }}
-          >
-            €{amount.toLocaleString('it-IT')}
-          </div>
-        )}
-        {!isEditingAmount && (
-          <div style={{ fontSize: '11px', color: '#6B6360', marginTop: '4px' }}>
-            Tocca per modificare
-          </div>
-        )}
+        <input
+          type="number"
+          inputMode="numeric"
+          value={amount === 0 ? '' : amount}
+          placeholder="0"
+          min={0}
+          max={available}
+          onChange={(e) => {
+            const parsed = parseInt(e.target.value, 10);
+            if (Number.isNaN(parsed) || parsed < 0) {
+              setAmount(0);
+            } else {
+              setAmount(Math.min(parsed, available));
+            }
+          }}
+          style={{
+            fontSize: '40px',
+            fontWeight: 'bold',
+            color: '#0F0D0C',
+            textAlign: 'center',
+            background: 'transparent',
+            border: 'none',
+            outline: 'none',
+            width: '160px',
+            caretColor: '#B85A6E',
+            MozAppearance: 'textfield'
+          }}
+        />
       </div>
     </div>
   );
@@ -1109,9 +1076,6 @@ const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
   const [amount, setAmount] = useState(Math.min(250, state.balance));
   const [flowStep, setFlowStep] = useState('amount'); // amount | timing | dates
   const [selectedDate, setSelectedDate] = useState('');
-  const [isEditingAmount, setIsEditingAmount] = useState(false);
-  const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef(null);
 
   const availableBalance = state.balance;
   const displayIban = `••••${state.iban.replace(/\s/g, '').slice(-4)}`;
@@ -1152,17 +1116,8 @@ const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
     }
   }, [selectedDate, dateChips]);
 
-  useEffect(() => {
-    if (isEditingAmount && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isEditingAmount]);
-
   const applyQuickAmount = (value) => {
     setAmount(value);
-    setIsEditingAmount(false);
-    setInputValue(String(value));
   };
 
   const performWithdraw = (isScheduled) => {
@@ -1192,14 +1147,10 @@ const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
 
             <CircularDial
               maxAmount={availableBalance}
+              available={availableBalance}
               amount={amount}
               setAmount={setAmount}
               onInteraction={() => {}}
-              isEditingAmount={isEditingAmount}
-              setIsEditingAmount={setIsEditingAmount}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-              inputRef={inputRef}
             />
 
             <div className="grid grid-cols-2 gap-2 mb-3">
