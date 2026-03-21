@@ -120,6 +120,59 @@ const calculateNetMonthly = (ral) => Math.round((Number(ral) / 12) * 0.72);
 const fullEmployeeName = (employee) => `${employee.firstName} ${employee.lastName}`.trim();
 const employeeInitials = (employee) => `${employee.firstName?.[0] || ''}${employee.lastName?.[0] || ''}`.toUpperCase();
 
+const MONTHLY_SALARY = 2000;
+const WORKDAYS_PER_MONTH = 21;
+const ADVANCE_PERCENT = 0.50;
+const PAY_DAY = 10;
+const ITALIAN_MONTHS = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+
+const formatPayrollDate = (date) => `${date.getDate()} ${ITALIAN_MONTHS[date.getMonth()]}`;
+
+const EMP_PAYROLL_SNAPSHOT = (() => {
+  const today = new Date();
+  const currentDay = today.getDate();
+  const currentMonth = today.getMonth();
+  const currentYear = today.getFullYear();
+
+  let periodStart;
+  let periodEnd;
+
+  if (currentDay >= PAY_DAY) {
+    periodStart = new Date(currentYear, currentMonth, PAY_DAY);
+    periodEnd = new Date(currentYear, currentMonth + 1, PAY_DAY);
+  } else {
+    periodStart = new Date(currentYear, currentMonth - 1, PAY_DAY);
+    periodEnd = new Date(currentYear, currentMonth, PAY_DAY);
+  }
+
+  const totalDays = Math.round((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24));
+  const daysWorked = Math.round((today.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24));
+  const daysWorkedClamped = Math.max(0, Math.min(daysWorked, totalDays));
+  const daysUntilPayday = Math.max(0, Math.round((periodEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+
+  const accrued = Math.round((daysWorkedClamped / totalDays) * MONTHLY_SALARY);
+  const available = Math.round(accrued * ADVANCE_PERCENT);
+  const remainingPaycheck = MONTHLY_SALARY - available;
+  const progressPercent = Math.round((daysWorkedClamped / totalDays) * 100);
+  const periodLabel = `${formatPayrollDate(periodStart)} → ${formatPayrollDate(periodEnd)}`;
+  const paydayLabel = `${periodEnd.getDate()} ${ITALIAN_MONTHS[periodEnd.getMonth()]}`;
+  const daysWorkedLabel = `${daysWorkedClamped} giorni lavorati su ${totalDays} · periodo ${periodLabel}`;
+  const hour = today.getHours();
+  const greeting = hour < 12 ? 'Buongiorno' : 'Buonasera';
+
+  return {
+    accrued,
+    available,
+    remainingPaycheck,
+    progressPercent,
+    periodLabel,
+    paydayLabel,
+    daysWorkedLabel,
+    daysUntilPayday,
+    greeting
+  };
+})();
+
 const createEmployee = (employee) => ({
   ...employee,
   netMonthly: calculateNetMonthly(employee.ral)
@@ -154,7 +207,7 @@ const useAnimatedValue = (end, duration = 1000) => {
 
 // --- MOCK DATA ---
 const INITIAL_EMP_STATE = {
-  balance: 1219,
+  balance: EMP_PAYROLL_SNAPSHOT.available,
   monthlyWithdrawn: 1380, 
   totalWithdrawals: 6,
   salary: 3200,
@@ -168,8 +221,8 @@ const INITIAL_EMP_STATE = {
   ],
   notifications: [
     { id: 1, type: 'success', title: 'Bonifico accreditato', body: '€300 ricevuti su ••••3456', time: 'Oggi, 09:14', read: false },
-    { id: 2, type: 'info', title: 'Nuovo saldo disponibile', body: 'Da oggi puoi prelevare fino a €762', time: 'Ieri, 08:00', read: false },
-    { id: 3, type: 'payday', title: 'Busta paga in arrivo', body: 'Il 10 aprile riceverai €620 su ••••3456', time: '2 giorni fa', read: true }
+    { id: 2, type: 'info', title: 'Nuovo saldo disponibile', body: `Da oggi puoi prelevare fino a ${formatEur(EMP_PAYROLL_SNAPSHOT.available)}`, time: 'Ieri, 08:00', read: false },
+    { id: 3, type: 'payday', title: 'Busta paga in arrivo', body: `Il ${EMP_PAYROLL_SNAPSHOT.paydayLabel} ricevi ${formatEur(EMP_PAYROLL_SNAPSHOT.remainingPaycheck)} su ••••3456`, time: '2 giorni fa', read: true }
   ]
 };
 
@@ -341,6 +394,7 @@ const EmployeeOnboarding = ({ onComplete }) => {
   const [acceptedContract, setAcceptedContract] = useState(false);
   const [showSigned, setShowSigned] = useState(false);
   const [ringBalance, setRingBalance] = useState(0);
+  const { available, accrued, progressPercent, daysWorkedLabel, paydayLabel, remainingPaycheck } = EMP_PAYROLL_SNAPSHOT;
 
   const goToStep3 = () => {
     setStep(3);
@@ -360,7 +414,7 @@ const EmployeeOnboarding = ({ onComplete }) => {
     { icon: '👤', label: 'Nome', value: 'Mario Rossi' },
     { icon: '🏢', label: 'Azienda', value: 'Acme SpA' },
     { icon: '💼', label: 'Ruolo', value: 'Sviluppatore Senior' },
-    { icon: '💰', label: 'Stipendio netto', value: '€2.300/mese' },
+    { icon: '💰', label: 'Stipendio netto', value: `${formatEur(MONTHLY_SALARY)}/mese` },
     { icon: '📅', label: 'Busta paga', value: 'il 10 di ogni mese' }
   ];
 
@@ -373,7 +427,7 @@ const EmployeeOnboarding = ({ onComplete }) => {
     const firstTick = (now) => {
       const elapsed = now - firstStart;
       const progress = Math.min(elapsed / 1500, 1);
-      setRingBalance(Math.round(1219 * progress));
+      setRingBalance(Math.round(available * progress));
       if (progress < 1) {
         raf1 = requestAnimationFrame(firstTick);
       }
@@ -384,7 +438,7 @@ const EmployeeOnboarding = ({ onComplete }) => {
     return () => {
       cancelAnimationFrame(raf1);
     };
-  }, [step, contractSubStep]);
+  }, [step, contractSubStep, available]);
 
   return (
     <div className="flex-1 bg-white flex flex-col relative overflow-hidden h-full">
@@ -597,7 +651,7 @@ una quota del salario già maturato e non ancora erogato.
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 pt-20 [WebkitOverflowScrolling:touch]">
               <div className="flex flex-col items-center justify-center text-center">
                 <div className="relative mb-6">
-                  <CircularProgress value={61} max={100} size={200} strokeWidth={12} trackStroke="rgba(255,255,255,0.15)" progressStroke="var(--rosa-200)" />
+                  <CircularProgress value={progressPercent} max={100} size={200} strokeWidth={12} trackStroke="rgba(255,255,255,0.15)" progressStroke="var(--rosa-200)" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="text-[48px] font-bold leading-none text-white">€{ringBalance.toLocaleString('it-IT')}</div>
                     <div className="text-[14px] text-[var(--rosa-300)]">disponibili</div>
@@ -606,23 +660,23 @@ una quota del salario già maturato e non ancora erogato.
 
                 <div className="w-full mb-4">
                   <div className="h-1.5 w-full bg-white/15 rounded-full overflow-hidden mb-3">
-                    <div className="h-full bg-[var(--rosa-200)] transition-all duration-[1500ms] ease-out" style={{ width: '61%' }} />
+                    <div className="h-full bg-[var(--rosa-200)] transition-all duration-[1500ms] ease-out" style={{ width: `${progressPercent}%` }} />
                   </div>
-                  <p className="text-[13px] text-[var(--rosa-300)] text-center">24 giorni lavorati su 31 · periodo 10 mar → 10 apr</p>
+                  <p className="text-[13px] text-[var(--rosa-300)] text-center">{daysWorkedLabel}</p>
                 </div>
 
                 <div className="w-full grid grid-cols-2 gap-3 mb-4">
                   <div className="bg-[var(--antracite)] rounded-[12px] p-3 text-left">
                     <div className="text-[12px] text-[var(--grafite)]">Maturato</div>
-                    <div className="text-[22px] font-bold text-white">€1.524</div>
+                    <div className="text-[22px] font-bold text-white">{formatEur(accrued)}</div>
                   </div>
                   <div className="bg-[var(--antracite)] rounded-[12px] p-3 text-left">
                     <div className="text-[12px] text-[var(--grafite)]">Disponibile</div>
-                    <div className="text-[22px] font-bold text-white">€1.219</div>
+                    <div className="text-[22px] font-bold text-white">{formatEur(available)}</div>
                   </div>
                 </div>
 
-                <p className="text-[13px] text-[var(--grafite)] text-center mb-2">Il 10 aprile ricevi €781 con la busta paga.</p>
+                <p className="text-[13px] text-[var(--grafite)] text-center mb-2">Il {paydayLabel} ricevi {formatEur(remainingPaycheck)} con la busta paga.</p>
               </div>
             </div>
 
@@ -732,26 +786,52 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileV
 
 // --- TAB: PANORAMICA ---
 const TabPanoramica = ({ state, onOpenPreleva }) => {
-  const nextPayday = new Date(2026, 3, 10);
-  const today = new Date(2026, 2, 19);
-  const daysMissing = Math.max(0, Math.ceil((nextPayday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
-  const earnedSoFar = state.balance + state.monthlyWithdrawn;
+  const { available, accrued, periodLabel, daysUntilPayday, greeting } = EMP_PAYROLL_SNAPSHOT;
+  const START_BALANCE = Math.round(available * 0.62);
+  const animationRan = useRef(false);
+  const [displayBalance, setDisplayBalance] = useState(START_BALANCE);
+
+  useEffect(() => {
+    if (animationRan.current) return;
+    animationRan.current = true;
+
+    const delay = setTimeout(() => {
+      const from = START_BALANCE;
+      const to = available;
+      const duration = 1200;
+      const startTime = performance.now();
+
+      const tick = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setDisplayBalance(Math.round(from + (to - from) * eased));
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        }
+      };
+
+      requestAnimationFrame(tick);
+    }, 800);
+
+    return () => clearTimeout(delay);
+  }, [START_BALANCE, available]);
 
   return (
     <div className="p-4 space-y-4 bg-white min-h-full animate-fade-up">
       <div>
-        <p className="text-[13px] text-[var(--grafite)] mb-1">Buongiorno, Mario.</p>
+        <p className="text-[13px] text-[var(--grafite)] mb-1">{greeting}, Mario.</p>
         <h2 className="text-[20px] font-bold text-[var(--nero)]">Il tuo stipendio è cresciuto.</h2>
       </div>
 
       <div className="bg-[var(--nero)] rounded-[20px] p-4 pb-7 shadow-[0_1px_8px_rgba(0,0,0,0.05)] text-white">
         <div className="flex items-center justify-between mb-2">
           <div className="text-[11px] uppercase tracking-wider text-[var(--rosa-300)]">Disponibile ora</div>
-          <div className="text-[11px] text-[var(--rosa-300)]">10 mar → 10 apr</div>
+          <div className="text-[11px] text-[var(--rosa-300)]">{periodLabel}</div>
         </div>
 
         <div className="text-[72px] font-extrabold tracking-[-0.03em] leading-none text-white">
-          <span>€{(1219).toLocaleString('it-IT')}</span>
+          <span>€{displayBalance.toLocaleString('it-IT')}</span>
         </div>
       </div>
 
@@ -764,10 +844,10 @@ const TabPanoramica = ({ state, onOpenPreleva }) => {
       </button>
 
       <div className="grid grid-cols-2 gap-3">
-        <MetricCard label="Importo maturato finora" value={formatEur(earnedSoFar)} />
+        <MetricCard label="Importo maturato finora" value={formatEur(accrued)} />
         <MetricCard label="Importo gia prelevato nel mese" value={formatEur(state.monthlyWithdrawn)} />
         <div className="col-span-2">
-          <MetricCard label="Giorni al prossimo stipendio" value={`${daysMissing} giorni`} />
+          <MetricCard label="Giorni al prossimo stipendio" value={`${daysUntilPayday} giorni`} />
         </div>
       </div>
 
