@@ -9,6 +9,8 @@ import * as XLSX from 'xlsx';
 import logoDark from './Favicon (Dark).png';
 import IbanModal from './IbanModal';
 
+let sessionAnimationPlayed = false;
+
 // --- STYLES & GLOBALS ---
 const globalStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -789,9 +791,9 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileV
 // --- TAB: PANORAMICA ---
 const TabPanoramica = ({ state, onOpenPreleva }) => {
   const { available, accrued, periodLabel, daysUntilPayday, greeting, periodStart, today } = EMP_PAYROLL_SNAPSHOT;
-  const START_BALANCE = Math.round(available * 0.62);
-  const animationRan = useRef(false);
-  const [displayBalance, setDisplayBalance] = useState(START_BALANCE);
+  const [displayBalance, setDisplayBalance] = useState(
+    sessionAnimationPlayed ? available : Math.round(available * 0.62)
+  );
 
   const monthToIndex = {
     gen: 0, feb: 1, mar: 2, apr: 3, mag: 4, giu: 5,
@@ -815,30 +817,35 @@ const TabPanoramica = ({ state, onOpenPreleva }) => {
     .reduce((sum, w) => sum + w.amount, 0);
 
   useEffect(() => {
-    if (animationRan.current) return;
-    animationRan.current = true;
+    if (sessionAnimationPlayed) {
+      setDisplayBalance(available);
+      return;
+    }
 
-    const delay = setTimeout(() => {
-      const from = START_BALANCE;
-      const to = available;
+    sessionAnimationPlayed = true;
+
+    const timer = setTimeout(() => {
+      const startValue = Math.round(available * 0.62);
+      const endValue = available;
       const duration = 1200;
       const startTime = performance.now();
 
-      const tick = (now) => {
-        const elapsed = now - startTime;
+      const animate = (currentTime) => {
+        const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
         const eased = 1 - Math.pow(1 - progress, 3);
-        setDisplayBalance(Math.round(from + (to - from) * eased));
+        const current = Math.round(startValue + (endValue - startValue) * eased);
+        setDisplayBalance(current);
         if (progress < 1) {
-          requestAnimationFrame(tick);
+          requestAnimationFrame(animate);
         }
       };
 
-      requestAnimationFrame(tick);
+      requestAnimationFrame(animate);
     }, 800);
 
-    return () => clearTimeout(delay);
-  }, [START_BALANCE, available]);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="p-4 space-y-4 bg-white min-h-full animate-fade-up">
