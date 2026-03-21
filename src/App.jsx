@@ -360,7 +360,7 @@ const EmployeeOnboarding = ({ onComplete }) => {
     { icon: '👤', label: 'Nome', value: 'Mario Rossi' },
     { icon: '🏢', label: 'Azienda', value: 'Acme SpA' },
     { icon: '💼', label: 'Ruolo', value: 'Sviluppatore Senior' },
-    { icon: '💰', label: 'Stipendio netto', value: '€2.000/mese' },
+    { icon: '💰', label: 'Stipendio netto', value: '€2.300/mese' },
     { icon: '📅', label: 'Busta paga', value: 'il 10 di ogni mese' }
   ];
 
@@ -368,13 +368,12 @@ const EmployeeOnboarding = ({ onComplete }) => {
     if (!(step === 3 && contractSubStep === 'balance')) return;
 
     let raf1 = 0;
-    let raf2 = 0;
     const firstStart = performance.now();
 
     const firstTick = (now) => {
       const elapsed = now - firstStart;
       const progress = Math.min(elapsed / 1500, 1);
-      setRingBalance(Math.round(762 * progress));
+      setRingBalance(Math.round(1219 * progress));
       if (progress < 1) {
         raf1 = requestAnimationFrame(firstTick);
       }
@@ -382,32 +381,15 @@ const EmployeeOnboarding = ({ onComplete }) => {
 
     raf1 = requestAnimationFrame(firstTick);
 
-    const secondAnimation = setTimeout(() => {
-      const from = 762;
-      const to = 1219;
-      const duration = 1200;
-      const startTime = performance.now();
-      const tick = (now) => {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        setRingBalance(Math.round(from + (to - from) * eased));
-        if (progress < 1) requestAnimationFrame(tick);
-      };
-      raf2 = requestAnimationFrame(tick);
-    }, 1900);
-
     return () => {
       cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-      clearTimeout(secondAnimation);
     };
   }, [step, contractSubStep]);
 
   return (
     <div className="flex-1 bg-white flex flex-col relative overflow-hidden h-full">
       <div className="absolute top-0 w-full p-6 flex justify-end z-20">
-        <button onClick={() => onComplete('skip')} className="text-[13px] text-[var(--grafite)] hover:underline">
+        <button onClick={onComplete} className="text-[13px] text-[var(--grafite)] hover:underline">
           Salta &rarr;
         </button>
       </div>
@@ -615,7 +597,7 @@ una quota del salario già maturato e non ancora erogato.
             <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 pt-20 [WebkitOverflowScrolling:touch]">
               <div className="flex flex-col items-center justify-center text-center">
                 <div className="relative mb-6">
-                  <CircularProgress value={77} max={100} size={200} strokeWidth={12} trackStroke="rgba(255,255,255,0.15)" progressStroke="var(--rosa-200)" />
+                  <CircularProgress value={61} max={100} size={200} strokeWidth={12} trackStroke="rgba(255,255,255,0.15)" progressStroke="var(--rosa-200)" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="text-[48px] font-bold leading-none text-white">€{ringBalance.toLocaleString('it-IT')}</div>
                     <div className="text-[14px] text-[var(--rosa-300)]">disponibili</div>
@@ -624,7 +606,7 @@ una quota del salario già maturato e non ancora erogato.
 
                 <div className="w-full mb-4">
                   <div className="h-1.5 w-full bg-white/15 rounded-full overflow-hidden mb-3">
-                    <div className="h-full bg-[var(--rosa-200)] transition-all duration-[1500ms] ease-out" style={{ width: '77%' }} />
+                    <div className="h-full bg-[var(--rosa-200)] transition-all duration-[1500ms] ease-out" style={{ width: '61%' }} />
                   </div>
                   <p className="text-[13px] text-[var(--rosa-300)] text-center">24 giorni lavorati su 31 · periodo 10 mar → 10 apr</p>
                 </div>
@@ -636,16 +618,16 @@ una quota del salario già maturato e non ancora erogato.
                   </div>
                   <div className="bg-[var(--antracite)] rounded-[12px] p-3 text-left">
                     <div className="text-[12px] text-[var(--grafite)]">Disponibile</div>
-                    <div className="text-[22px] font-bold text-white">€762</div>
+                    <div className="text-[22px] font-bold text-white">€1.219</div>
                   </div>
                 </div>
 
-                <p className="text-[13px] text-[var(--grafite)] text-center mb-2">Il 10 aprile ricevi €1.238 con la busta paga.</p>
+                <p className="text-[13px] text-[var(--grafite)] text-center mb-2">Il 10 aprile ricevi €781 con la busta paga.</p>
               </div>
             </div>
 
             <div className="shrink-0 p-4 px-6 pb-[max(16px,env(safe-area-inset-bottom))] bg-[#0F0D0C]">
-              <button onClick={() => onComplete('completed')} className="w-full h-[52px] rounded-[12px] bg-white text-[#0F0D0C] font-bold text-[16px]">
+              <button onClick={onComplete} className="w-full h-[52px] rounded-[12px] bg-white text-[#0F0D0C] font-bold text-[16px]">
                 Inizia adesso &rarr;
               </button>
             </div>
@@ -667,7 +649,7 @@ una quota del salario già maturato e non ancora erogato.
 
 
 // --- EMPLOYEE APP SHELL & TABS ---
-const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileViewport, usePhoneShell, homeAnimationMode, onHomeAnimationHandled }) => {
+const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileViewport, usePhoneShell }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [ibanModalOpen, setIbanModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -722,8 +704,6 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileV
         {activeTab === 'home' && (
           <TabPanoramica
             state={state}
-            homeAnimationMode={homeAnimationMode}
-            onHomeAnimationHandled={onHomeAnimationHandled}
             onOpenPreleva={() => setActiveTab('preleva')}
           />
         )}
@@ -751,64 +731,11 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileV
 
 
 // --- TAB: PANORAMICA ---
-const TabPanoramica = ({ state, onOpenPreleva, homeAnimationMode, onHomeAnimationHandled }) => {
-  const REAL_BALANCE = 1219;
-  const START_BALANCE = 762;
-
-  const animationRan = useRef(false);
-  const [displayBalance, setDisplayBalance] = useState(START_BALANCE);
-
+const TabPanoramica = ({ state, onOpenPreleva }) => {
   const nextPayday = new Date(2026, 3, 10);
   const today = new Date(2026, 2, 19);
   const daysMissing = Math.max(0, Math.ceil((nextPayday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
   const earnedSoFar = state.balance + state.monthlyWithdrawn;
-
-  useEffect(() => {
-    if (homeAnimationMode === 'done') {
-      setDisplayBalance(1219);
-      animationRan.current = true;
-      return;
-    }
-
-    if (homeAnimationMode === 'onboarding') {
-      setDisplayBalance(1219);
-      animationRan.current = true;
-      onHomeAnimationHandled?.();
-      return;
-    }
-
-    if (homeAnimationMode !== 'skip') return;
-    if (animationRan.current) return;
-    animationRan.current = true;
-
-    const delay = setTimeout(() => {
-      const from = 762;
-      const to = 1219;
-      const duration = 1200;
-      const startTime = performance.now();
-
-      const tick = (now) => {
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        setDisplayBalance(Math.round(from + (to - from) * eased));
-        if (progress < 1) {
-          requestAnimationFrame(tick);
-        }
-      };
-
-      requestAnimationFrame(tick);
-    }, 800);
-
-    onHomeAnimationHandled?.();
-    return () => clearTimeout(delay);
-  }, [homeAnimationMode, onHomeAnimationHandled]);
-
-  useEffect(() => {
-    if (state.balance !== START_BALANCE) {
-      setDisplayBalance(state.balance);
-    }
-  }, [state.balance]);
 
   return (
     <div className="p-4 space-y-4 bg-white min-h-full animate-fade-up">
@@ -824,7 +751,7 @@ const TabPanoramica = ({ state, onOpenPreleva, homeAnimationMode, onHomeAnimatio
         </div>
 
         <div className="text-[72px] font-extrabold tracking-[-0.03em] leading-none text-white">
-          <span>€{displayBalance.toLocaleString('it-IT')}</span>
+          <span>€{(1219).toLocaleString('it-IT')}</span>
         </div>
       </div>
 
@@ -2395,7 +2322,6 @@ export default function App() {
   const [currentView, setCurrentView] = useState('login');
   const [demoMode, setDemoMode] = useState('emp-mobile'); 
   const [empState, setEmpState] = useState(INITIAL_EMP_STATE);
-  const [homeAnimationMode, setHomeAnimationMode] = useState('none');
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
@@ -2409,7 +2335,6 @@ export default function App() {
   const handleLogin = (role, skipOnboarding) => {
     if (role === 'emp') {
       setDemoMode('emp-mobile');
-      setHomeAnimationMode(skipOnboarding ? 'skip' : 'none');
       setCurrentView(skipOnboarding ? 'emp-home' : 'emp-onboard');
     } else {
       setDemoMode('hr');
@@ -2420,11 +2345,9 @@ export default function App() {
   const handleLogout = () => {
     setCurrentView('login');
     setEmpState(INITIAL_EMP_STATE);
-    setHomeAnimationMode('none');
   };
 
-  const handleEmployeeOnboardingComplete = (source) => {
-    setHomeAnimationMode(source === 'completed' ? 'onboarding' : 'skip');
+  const handleEmployeeOnboardingComplete = () => {
     setCurrentView('emp-home');
   };
 
@@ -2462,8 +2385,6 @@ export default function App() {
               onLogout={handleLogout}
               isMobileViewport={true}
               usePhoneShell={false}
-              homeAnimationMode={homeAnimationMode}
-              onHomeAnimationHandled={() => setHomeAnimationMode('done')}
             />
           </div>
         )}
@@ -2527,8 +2448,6 @@ export default function App() {
                  onLogout={handleLogout}
                  isMobileViewport={false}
                  usePhoneShell={demoMode === 'emp-mobile'}
-                   homeAnimationMode={homeAnimationMode}
-                   onHomeAnimationHandled={() => setHomeAnimationMode('done')}
                />
              )}
           </div>
