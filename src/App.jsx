@@ -340,11 +340,7 @@ const EmployeeOnboarding = ({ onComplete }) => {
   const [contractSubStep, setContractSubStep] = useState('contract');
   const [acceptedContract, setAcceptedContract] = useState(false);
   const [showSigned, setShowSigned] = useState(false);
-
-  const AnimatedBalance = () => {
-    const val = useAnimatedValue(762, 1500);
-    return <span>€{val.toLocaleString('it-IT')}</span>;
-  };
+  const [ringBalance, setRingBalance] = useState(0);
 
   const goToStep3 = () => {
     setStep(3);
@@ -368,10 +364,50 @@ const EmployeeOnboarding = ({ onComplete }) => {
     { icon: '📅', label: 'Busta paga', value: 'il 10 di ogni mese' }
   ];
 
+  useEffect(() => {
+    if (!(step === 3 && contractSubStep === 'balance')) return;
+
+    let raf1 = 0;
+    let raf2 = 0;
+    const firstStart = performance.now();
+
+    const firstTick = (now) => {
+      const elapsed = now - firstStart;
+      const progress = Math.min(elapsed / 1500, 1);
+      setRingBalance(Math.round(762 * progress));
+      if (progress < 1) {
+        raf1 = requestAnimationFrame(firstTick);
+      }
+    };
+
+    raf1 = requestAnimationFrame(firstTick);
+
+    const secondAnimation = setTimeout(() => {
+      const from = 762;
+      const to = 1219;
+      const duration = 1200;
+      const startTime = performance.now();
+      const tick = (now) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setRingBalance(Math.round(from + (to - from) * eased));
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      raf2 = requestAnimationFrame(tick);
+    }, 1900);
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      clearTimeout(secondAnimation);
+    };
+  }, [step, contractSubStep]);
+
   return (
     <div className="flex-1 bg-white flex flex-col relative overflow-hidden h-full">
       <div className="absolute top-0 w-full p-6 flex justify-end z-20">
-        <button onClick={onComplete} className="text-[13px] text-[var(--grafite)] hover:underline">
+        <button onClick={() => onComplete('skip')} className="text-[13px] text-[var(--grafite)] hover:underline">
           Salta &rarr;
         </button>
       </div>
@@ -581,7 +617,7 @@ una quota del salario già maturato e non ancora erogato.
                 <div className="relative mb-6">
                   <CircularProgress value={77} max={100} size={200} strokeWidth={12} trackStroke="rgba(255,255,255,0.15)" progressStroke="var(--rosa-200)" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="text-[48px] font-bold leading-none text-white"><AnimatedBalance /></div>
+                    <div className="text-[48px] font-bold leading-none text-white">€{ringBalance.toLocaleString('it-IT')}</div>
                     <div className="text-[14px] text-[var(--rosa-300)]">disponibili</div>
                   </div>
                 </div>
@@ -609,7 +645,7 @@ una quota del salario già maturato e non ancora erogato.
             </div>
 
             <div className="shrink-0 p-4 px-6 pb-[max(16px,env(safe-area-inset-bottom))] bg-[var(--nero)]">
-              <button onClick={onComplete} className="w-full h-[52px] rounded-[12px] bg-[var(--nero)] text-white font-bold border border-white/20">
+              <button onClick={() => onComplete('completed')} className="w-full h-[52px] rounded-[12px] bg-[var(--nero)] text-white font-bold border border-white/20">
                 Inizia adesso &rarr;
               </button>
             </div>
@@ -631,7 +667,7 @@ una quota del salario già maturato e non ancora erogato.
 
 
 // --- EMPLOYEE APP SHELL & TABS ---
-const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileViewport, usePhoneShell }) => {
+const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileViewport, usePhoneShell, homeAnimationMode, onHomeAnimationHandled }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [ibanModalOpen, setIbanModalOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
@@ -686,6 +722,8 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileV
         {activeTab === 'home' && (
           <TabPanoramica
             state={state}
+            homeAnimationMode={homeAnimationMode}
+            onHomeAnimationHandled={onHomeAnimationHandled}
             onOpenPreleva={() => setActiveTab('preleva')}
           />
         )}
@@ -713,15 +751,12 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileV
 
 
 // --- TAB: PANORAMICA ---
-const TabPanoramica = ({ state, onOpenPreleva }) => {
-  const REAL_BALANCE = 762;
-  const EARNED_SINCE = 196;
+const TabPanoramica = ({ state, onOpenPreleva, homeAnimationMode, onHomeAnimationHandled }) => {
+  const REAL_BALANCE = 1219;
+  const START_BALANCE = 762;
 
   const animationRan = useRef(false);
-  const [displayBalance, setDisplayBalance] = useState(REAL_BALANCE - EARNED_SINCE);
-  const [showLabel, setShowLabel] = useState(false);
-  const [showPill, setShowPill] = useState(false);
-  const [showPulse, setShowPulse] = useState(false);
+  const [displayBalance, setDisplayBalance] = useState(START_BALANCE);
 
   const nextPayday = new Date(2026, 3, 10);
   const today = new Date(2026, 2, 19);
@@ -729,18 +764,27 @@ const TabPanoramica = ({ state, onOpenPreleva }) => {
   const earnedSoFar = state.balance + state.monthlyWithdrawn;
 
   useEffect(() => {
+    if (homeAnimationMode === 'done') {
+      setDisplayBalance(1219);
+      animationRan.current = true;
+      return;
+    }
+
+    if (homeAnimationMode === 'onboarding') {
+      setDisplayBalance(1219);
+      animationRan.current = true;
+      onHomeAnimationHandled?.();
+      return;
+    }
+
+    if (homeAnimationMode !== 'skip') return;
     if (animationRan.current) return;
     animationRan.current = true;
 
-    const t1 = setTimeout(() => {
-      setShowLabel(true);
-      setShowPill(true);
-    }, 600);
-
-    const t2 = setTimeout(() => {
-      const from = REAL_BALANCE - EARNED_SINCE;
-      const to = REAL_BALANCE;
-      const duration = 1000;
+    const delay = setTimeout(() => {
+      const from = 762;
+      const to = 1219;
+      const duration = 1200;
       const startTime = performance.now();
 
       const tick = (now) => {
@@ -750,23 +794,20 @@ const TabPanoramica = ({ state, onOpenPreleva }) => {
         setDisplayBalance(Math.round(from + (to - from) * eased));
         if (progress < 1) {
           requestAnimationFrame(tick);
-        } else {
-          setShowLabel(false);
-          setTimeout(() => setShowPill(false), 2000);
-          setTimeout(() => {
-            setShowPulse(true);
-            setTimeout(() => setShowPulse(false), 400);
-          }, 100);
-        };
+        }
       };
-      requestAnimationFrame(tick);
-    }, 1000);
 
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+      requestAnimationFrame(tick);
+    }, 800);
+
+    onHomeAnimationHandled?.();
+    return () => clearTimeout(delay);
+  }, [homeAnimationMode, onHomeAnimationHandled]);
 
   useEffect(() => {
-    setDisplayBalance(state.balance);
+    if (state.balance !== START_BALANCE) {
+      setDisplayBalance(state.balance);
+    }
   }, [state.balance]);
 
   return (
@@ -782,44 +823,9 @@ const TabPanoramica = ({ state, onOpenPreleva }) => {
           <div className="text-[11px] text-[var(--rosa-300)]">10 mar → 10 apr</div>
         </div>
 
-        {showLabel && (
-          <span style={{
-            fontSize: '11px',
-            color: '#E89CAC',
-            display: 'block',
-            marginBottom: '4px',
-            opacity: 1,
-            transition: 'opacity 300ms ease'
-          }}>
-            Da ieri alle 18:30
-          </span>
-        )}
-
         <div className="text-[72px] font-extrabold tracking-[-0.03em] leading-none text-white">
-          <span style={{
-            display: 'inline-block',
-            transform: showPulse ? 'scale(1.02)' : 'scale(1)',
-            transition: 'transform 400ms ease-in-out'
-          }}>
-            €{displayBalance.toLocaleString('it-IT')}
-          </span>
+          <span>€{displayBalance.toLocaleString('it-IT')}</span>
         </div>
-
-        {showPill && (
-          <span style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
-            fontSize: '10px',
-            color: '#0F0D0C',
-            backgroundColor: '#F4BFC5',
-            borderRadius: '999px',
-            padding: '3px 10px',
-            marginTop: '6px'
-          }}>
-            ● Aggiornato ora
-          </span>
-        )}
       </div>
 
       <button
@@ -2365,6 +2371,7 @@ export default function App() {
   const [currentView, setCurrentView] = useState('login');
   const [demoMode, setDemoMode] = useState('emp-mobile'); 
   const [empState, setEmpState] = useState(INITIAL_EMP_STATE);
+  const [homeAnimationMode, setHomeAnimationMode] = useState('none');
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
@@ -2378,6 +2385,7 @@ export default function App() {
   const handleLogin = (role, skipOnboarding) => {
     if (role === 'emp') {
       setDemoMode('emp-mobile');
+      setHomeAnimationMode(skipOnboarding ? 'skip' : 'none');
       setCurrentView(skipOnboarding ? 'emp-home' : 'emp-onboard');
     } else {
       setDemoMode('hr');
@@ -2388,6 +2396,12 @@ export default function App() {
   const handleLogout = () => {
     setCurrentView('login');
     setEmpState(INITIAL_EMP_STATE);
+    setHomeAnimationMode('none');
+  };
+
+  const handleEmployeeOnboardingComplete = (source) => {
+    setHomeAnimationMode(source === 'completed' ? 'onboarding' : 'skip');
+    setCurrentView('emp-home');
   };
 
   const handleWithdrawal = (amount, dateStr, isScheduled) => {
@@ -2405,22 +2419,15 @@ export default function App() {
     setEmpState(prev => ({ ...prev, iban: newIban }));
   };
 
-  if (currentView === 'login') {
-    return (
-      <div className="font-sans">
-        <style>{globalStyles}</style>
-        <LoginView onLogin={handleLogin} />
-      </div>
-    );
-  }
-
   if (isMobileViewport) {
+    const mobileEmployeeView = currentView === 'emp-onboard' ? 'emp-onboard' : 'emp-home';
+
     return (
       <div className="font-sans w-full h-[100dvh] bg-white overflow-hidden">
         <style>{globalStyles}</style>
-        {currentView === 'emp-onboard' ? (
+        {mobileEmployeeView === 'emp-onboard' ? (
           <div className="w-full h-full bg-white">
-            <EmployeeOnboarding state={empState} onComplete={() => setCurrentView('emp-home')} />
+            <EmployeeOnboarding state={empState} onComplete={handleEmployeeOnboardingComplete} />
           </div>
         ) : (
           <div className="w-full h-full bg-white">
@@ -2431,9 +2438,20 @@ export default function App() {
               onLogout={handleLogout}
               isMobileViewport={true}
               usePhoneShell={false}
+              homeAnimationMode={homeAnimationMode}
+              onHomeAnimationHandled={() => setHomeAnimationMode('done')}
             />
           </div>
         )}
+      </div>
+    );
+  }
+
+  if (currentView === 'login') {
+    return (
+      <div className="font-sans">
+        <style>{globalStyles}</style>
+        <LoginView onLogin={handleLogin} />
       </div>
     );
   }
@@ -2475,7 +2493,7 @@ export default function App() {
                    ? "w-full max-w-[390px] h-[calc(100dvh-96px)] md:h-[844px] rounded-none md:rounded-[32px] border-0 md:border-[8px] border-[var(--nero)]" 
                    : "w-full max-w-4xl h-[100dvh] md:h-[844px] rounded-none md:rounded-[32px] border-0 md:border border-[var(--ardesia-100)]"
                )}>
-                 <EmployeeOnboarding state={empState} onComplete={() => setCurrentView('emp-home')} />
+                 <EmployeeOnboarding state={empState} onComplete={handleEmployeeOnboardingComplete} />
                </div>
              ) : (
                <EmployeeAppShell
@@ -2485,6 +2503,8 @@ export default function App() {
                  onLogout={handleLogout}
                  isMobileViewport={false}
                  usePhoneShell={demoMode === 'emp-mobile'}
+                   homeAnimationMode={homeAnimationMode}
+                   onHomeAnimationHandled={() => setHomeAnimationMode('done')}
                />
              )}
           </div>
