@@ -597,7 +597,7 @@ una quota del salario già maturato e non ancora erogato.
                 type="button"
                 onClick={signContract}
                 disabled={!acceptedContract}
-                className="w-full h-[52px] rounded-[12px] bg-[var(--nero)] text-white font-bold disabled:opacity-40 relative"
+                className="w-full h-[52px] rounded-[12px] bg-[var(--nero)] text-white font-bold text-[16px] disabled:opacity-40 relative"
               >
                 Firma e continua &rarr;
                 {showSigned ? (
@@ -644,8 +644,8 @@ una quota del salario già maturato e non ancora erogato.
               </div>
             </div>
 
-            <div className="shrink-0 p-4 px-6 pb-[max(16px,env(safe-area-inset-bottom))] bg-[var(--nero)]">
-              <button onClick={() => onComplete('completed')} className="w-full h-[52px] rounded-[12px] bg-[var(--nero)] text-white font-bold border border-white/20">
+            <div className="shrink-0 p-4 px-6 pb-[max(16px,env(safe-area-inset-bottom))] bg-[#0F0D0C]">
+              <button onClick={() => onComplete('completed')} className="w-full h-[52px] rounded-[12px] bg-white text-[#0F0D0C] font-bold text-[16px]">
                 Inizia adesso &rarr;
               </button>
             </div>
@@ -1544,7 +1544,7 @@ const HROnboarding = ({ onComplete }) => {
               </div>
             </div>
 
-            <button onClick={nextStep} className="mt-auto w-full gradient-rosa text-white h-[52px] rounded-[12px] font-bold text-[16px] hover:opacity-95 transition-opacity">
+            <button onClick={nextStep} className="mt-auto mb-2 w-full gradient-rosa text-white h-[52px] rounded-[12px] font-bold text-[16px] hover:opacity-95 transition-opacity">
               Configura il servizio &rarr;
             </button>
           </div>
@@ -1569,7 +1569,7 @@ const HROnboarding = ({ onComplete }) => {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-auto">
+            <div className="flex gap-3 mt-auto mb-2">
               <button onClick={prevStep} className="px-6 h-[52px] rounded-[12px] border border-[var(--ardesia-300)] text-[var(--carbone)] bg-white">
                 &larr; Indietro
               </button>
@@ -1611,7 +1611,7 @@ const HROnboarding = ({ onComplete }) => {
               ))}
             </div>
 
-            <div className="flex gap-3 mt-4 pt-4 border-t border-[var(--ardesia-100)]">
+            <div className="flex gap-3 mt-4 mb-4 pt-4 border-t border-[var(--ardesia-100)]">
               <button onClick={prevStep} className="px-6 h-[52px] rounded-[12px] border border-[var(--ardesia-100)] text-[var(--carbone)]">
                 &larr; Indietro
               </button>
@@ -2177,7 +2177,8 @@ const HRDashboard = ({ onLogout }) => {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 border-t border-[var(--ardesia-100)] bg-[var(--fumo)]/30">
+            <div className="px-6 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 border-t border-[#F0F0F0]">
+              <div className="flex items-center justify-between">
               <div className="text-[12px] text-[var(--grafite)]">Mostrando {startIdx}–{endIdx} di {filteredEmployees.length} dipendenti</div>
               <div className="flex items-center gap-2">
                 <button onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage === 1} className="text-[13px] font-medium text-[var(--grafite)] disabled:text-[var(--polvere)] hover:text-[var(--nero)] disabled:hover:text-[var(--polvere)] px-2 transition-colors">&larr; Precedente</button>
@@ -2189,6 +2190,7 @@ const HRDashboard = ({ onLogout }) => {
                   ))}
                 </div>
                 <button onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={currentPage === totalPages} className="text-[13px] font-medium text-[var(--grafite)] disabled:text-[var(--polvere)] hover:text-[var(--nero)] disabled:hover:text-[var(--polvere)] px-2 transition-colors">Successivo &rarr;</button>
+              </div>
               </div>
             </div>
           )}
@@ -2276,7 +2278,7 @@ const HRDashboard = ({ onLogout }) => {
               </section>
             </div>
 
-            <div className="sticky bottom-0 bg-white border-t border-[var(--ardesia-100)] px-6 py-4">
+            <div className="shrink-0 p-4 px-6 pb-[max(16px,env(safe-area-inset-bottom))] bg-white border-t border-[#F0F0F0]">
               {showDiscardWarning ? (
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[13px] text-[var(--grafite)]">Hai modifiche non salvate.</span>
@@ -2286,9 +2288,9 @@ const HRDashboard = ({ onLogout }) => {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-3">
-                  <button type="button" onClick={requestCloseEmployeeModal} className="px-5 py-2.5 rounded-[10px] bg-[var(--fumo)] text-[var(--grafite)] text-[13px] font-semibold">Annulla</button>
-                  <button type="button" onClick={saveEmployeeChanges} disabled={!hasUnsavedChanges} className="px-5 py-2.5 rounded-[10px] bg-[var(--nero)] text-white text-[13px] font-semibold disabled:opacity-40 disabled:cursor-not-allowed">Salva modifiche →</button>
+                <div className="flex gap-3">
+                  <button type="button" onClick={requestCloseEmployeeModal} className="flex-1 h-[52px] rounded-[12px] bg-[#F5F2F1] text-[#6B6360] font-semibold text-[16px]">Annulla</button>
+                  <button type="button" onClick={saveEmployeeChanges} disabled={!hasUnsavedChanges} className="flex-1 h-[52px] rounded-[12px] bg-[var(--nero)] text-white font-bold text-[16px] disabled:opacity-40 disabled:cursor-not-allowed">Salva modifiche →</button>
                 </div>
               )}
             </div>
@@ -2298,7 +2300,8 @@ const HRDashboard = ({ onLogout }) => {
 
       {showImportModal && (
         <div className="fixed inset-0 bg-[var(--nero)]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-white rounded-[18px] border border-[var(--ardesia-100)] shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-lg bg-white rounded-[18px] border border-[var(--ardesia-100)] shadow-2xl overflow-hidden">
+            <div className="p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-[18px] font-bold text-[var(--nero)]">Importa dipendenti</h3>
               <button type="button" onClick={() => setShowImportModal(false)} className="text-[var(--grafite)] hover:text-[var(--nero)]" aria-label="Chiudi"><X size={18} /></button>
@@ -2328,13 +2331,26 @@ const HRDashboard = ({ onLogout }) => {
             <p className="text-[13px] bg-[var(--pervinca-50)] text-[var(--pervinca-500)] rounded-[8px] px-3 py-2.5">
               L'IBAN Virtuale viene assegnato automaticamente da QuandoVuoi al momento dell'attivazione del dipendente.
             </p>
+            </div>
+
+            <div className="shrink-0 p-4 px-6 pb-[max(16px,env(safe-area-inset-bottom))] bg-white border-t border-[#F0F0F0]">
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setShowImportModal(false)} className="flex-1 h-[52px] rounded-[12px] bg-[#F5F2F1] text-[#6B6360] font-semibold text-[16px]">
+                  Annulla
+                </button>
+                <button type="button" onClick={handleOpenFilePicker} className="flex-1 h-[52px] rounded-[12px] bg-[var(--nero)] text-white font-bold text-[16px]">
+                  Carica e importa →
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
       {showAddModal && (
         <div className="fixed inset-0 bg-[var(--nero)]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-white rounded-[18px] border border-[var(--ardesia-100)] shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-md bg-white rounded-[18px] border border-[var(--ardesia-100)] shadow-2xl overflow-hidden">
+            <div className="p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-[18px] font-bold text-[var(--nero)]">Aggiungi dipendente</h3>
               <button type="button" onClick={() => setShowAddModal(false)} className="text-[var(--grafite)] hover:text-[var(--nero)]" aria-label="Chiudi"><X size={18} /></button>
@@ -2352,9 +2368,17 @@ const HRDashboard = ({ onLogout }) => {
               <input type="text" placeholder="IBAN Vero" value={formData.ibanVero} onChange={(e) => setFormData((current) => ({ ...current, ibanVero: formatIbanInput(e.target.value) }))} className="sm:col-span-2 w-full bg-[var(--ardesia-50)] border border-[var(--ardesia-100)] rounded-[10px] px-3 py-2 text-[14px] focus:outline-none focus:border-[var(--rosa-300)]" />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border border-[var(--ardesia-100)] text-[var(--grafite)] rounded-[10px] text-[14px] font-semibold hover:bg-[var(--fumo)]">Annulla</button>
-              <button type="button" onClick={handleAddEmployee} className="px-4 py-2 gradient-rosa text-white rounded-[10px] text-[14px] font-bold hover:shadow-md transition-shadow">Salva</button>
+            </div>
+
+            <div className="shrink-0 p-4 px-6 pb-[max(16px,env(safe-area-inset-bottom))] bg-white border-t border-[#F0F0F0]">
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setShowAddModal(false)} className="flex-1 h-[52px] rounded-[12px] bg-[#F5F2F1] text-[#6B6360] font-semibold text-[16px]">
+                  Annulla
+                </button>
+                <button type="button" onClick={handleAddEmployee} className="flex-1 h-[52px] rounded-[12px] bg-[var(--nero)] text-white font-bold text-[16px]">
+                  Invia invito →
+                </button>
+              </div>
             </div>
           </div>
         </div>
