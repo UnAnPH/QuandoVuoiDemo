@@ -741,7 +741,7 @@ const TabPanoramica = ({ state, onOpenPreleva }) => {
     <div className="p-4 space-y-4 bg-white min-h-full animate-fade-up">
       <div>
         <p className="text-[13px] text-[var(--grafite)] mb-1">Buongiorno, Mario.</p>
-        <h2 className="text-[20px] font-bold text-[var(--nero)]">Il tuo stipendio e cresciuto.</h2>
+        <h2 className="text-[20px] font-bold text-[var(--nero)]">Il tuo stipendio è cresciuto.</h2>
       </div>
 
       <div className="bg-[var(--nero)] rounded-[20px] p-4 pb-7 shadow-[0_1px_8px_rgba(0,0,0,0.05)] text-white">
