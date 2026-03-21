@@ -990,7 +990,7 @@ const CircularDial = ({
   const thumbY = cy + r * Math.sin(angleRad);
 
   return (
-    <div className="relative w-[300px] h-[300px] mx-auto select-none touch-none mt-2 mb-2 pointer-events-none">
+    <div className="relative w-[300px] h-[300px] mx-auto select-none touch-none mt-2 mb-2 pointer-events-auto">
       <svg ref={svgRef} width="300" height="300" className="absolute inset-0 z-10 pointer-events-auto">
         <defs>
           <linearGradient id="dialRosa" x1="0" y1="0" x2="1" y2="1">
@@ -1041,57 +1041,56 @@ const CircularDial = ({
         />
       </svg>
 
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        <input
-          type="text"
-          inputMode="numeric"
-          pattern="[0-9]*"
-          value={amount === 0 ? '' : String(amount)}
-          placeholder="0"
-          onChange={(e) => {
-            const raw = e.target.value.replace(/\D/g, '');
-            const parsed = parseInt(raw, 10);
-            if (!raw || Number.isNaN(parsed)) {
-              setAmount(0);
-            } else if (parsed > available) {
-              setAmount(available);
-            } else {
-              setAmount(parsed);
-            }
-          }}
-          style={{
-            fontSize: '40px',
-            fontWeight: '800',
-            color: '#0F0D0C',
-            textAlign: 'center',
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
-            width: '160px',
-            padding: '0',
-            margin: '0',
-            caretColor: '#B85A6E',
-            WebkitAppearance: 'none',
-            MozAppearance: 'textfield',
-          }}
-        />
-        <span style={{
+      <input
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        value={amount === 0 ? '' : String(amount)}
+        placeholder="0"
+        onChange={(e) => {
+          const raw = e.target.value.replace(/\D/g, '');
+          const parsed = parseInt(raw, 10);
+          if (!raw || Number.isNaN(parsed)) setAmount(0);
+          else if (parsed > available) setAmount(available);
+          else setAmount(parsed);
+        }}
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -60%)',
+          pointerEvents: 'auto',
+          zIndex: 10,
+          fontSize: '40px',
+          fontWeight: '800',
+          color: '#0F0D0C',
+          textAlign: 'center',
+          background: 'transparent',
+          border: 'none',
+          outline: 'none',
+          width: '160px',
+          padding: '0',
+          margin: '0',
+          caretColor: '#B85A6E',
+          WebkitAppearance: 'none',
+          MozAppearance: 'textfield',
+        }}
+      />
+
+      <span
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, 24px)',
+          pointerEvents: 'auto',
+          zIndex: 10,
           fontSize: '12px',
           color: '#6B6360',
-          marginTop: '4px',
-        }}>
-          da prelevare
-        </span>
-      </div>
+        }}
+      >
+        da prelevare
+      </span>
     </div>
   );
 };
@@ -1271,6 +1270,7 @@ const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
           </div>
         )}
       </div>
+
     </div>
   );
 };
