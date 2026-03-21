@@ -39,6 +39,10 @@ const globalStyles = `
     margin: 0;
   }
 
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+
   .gradient-rosa {
     background: linear-gradient(135deg, var(--rosa-200), var(--rosa-300));
   }
@@ -1037,43 +1041,63 @@ const CircularDial = ({
         />
       </svg>
 
-      <div className="absolute inset-0 flex flex-col items-center justify-center z-0 pointer-events-auto">
-        <span className="text-[13px] text-[var(--grafite)] mb-1">da prelevare</span>
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
         <input
-          type="number"
+          type="text"
           inputMode="numeric"
-          value={amount === 0 ? '' : amount}
+          pattern="[0-9]*"
+          value={amount === 0 ? '' : String(amount)}
           placeholder="0"
-          min={0}
-          max={available}
           onChange={(e) => {
-            const parsed = parseInt(e.target.value, 10);
-            if (Number.isNaN(parsed) || parsed < 0) {
+            const raw = e.target.value.replace(/\D/g, '');
+            const parsed = parseInt(raw, 10);
+            if (!raw || Number.isNaN(parsed)) {
               setAmount(0);
+            } else if (parsed > available) {
+              setAmount(available);
             } else {
-              setAmount(Math.min(parsed, available));
+              setAmount(parsed);
             }
           }}
           style={{
             fontSize: '40px',
-            fontWeight: 'bold',
+            fontWeight: '800',
             color: '#0F0D0C',
             textAlign: 'center',
             background: 'transparent',
             border: 'none',
             outline: 'none',
             width: '160px',
+            padding: '0',
+            margin: '0',
             caretColor: '#B85A6E',
-            MozAppearance: 'textfield'
+            WebkitAppearance: 'none',
+            MozAppearance: 'textfield',
           }}
         />
+        <span style={{
+          fontSize: '12px',
+          color: '#6B6360',
+          marginTop: '4px',
+        }}>
+          da prelevare
+        </span>
       </div>
     </div>
   );
 };
 
 const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
-  const [amount, setAmount] = useState(Math.min(250, state.balance));
+  const [amount, setAmount] = useState(0);
   const [flowStep, setFlowStep] = useState('amount'); // amount | timing | dates
   const [selectedDate, setSelectedDate] = useState('');
 
@@ -1188,7 +1212,7 @@ const TabPreleva = ({ state, onClose, onWithdraw, onDone, onEditIban }) => {
               onClick={() => setFlowStep('timing')}
               className="w-full h-[52px] bg-[var(--nero)] hover:bg-[var(--antracite)] text-white rounded-[14px] font-bold disabled:opacity-40"
             >
-              {amountValid ? `Preleva ${formatEur(Math.round(amount))}` : 'Inserisci un importo valido'}
+              {amountValid ? `Preleva €${Math.round(amount).toLocaleString('it-IT')}` : 'Inserisci un importo valido'}
             </button>
           </>
         )}
