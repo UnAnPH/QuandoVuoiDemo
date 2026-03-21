@@ -122,7 +122,7 @@ const employeeInitials = (employee) => `${employee.firstName?.[0] || ''}${employ
 
 const MONTHLY_SALARY = 2000;
 const WORKDAYS_PER_MONTH = 21;
-const ADVANCE_PERCENT = 0.50;
+const ADVANCE_PERCENT = 0.55;
 const PAY_DAY = 10;
 const ITALIAN_MONTHS = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
 
@@ -169,7 +169,9 @@ const EMP_PAYROLL_SNAPSHOT = (() => {
     paydayLabel,
     daysWorkedLabel,
     daysUntilPayday,
-    greeting
+    greeting,
+    periodStart,
+    today
   };
 })();
 
@@ -786,10 +788,31 @@ const EmployeeAppShell = ({ state, onWithdraw, onUpdateIban, onLogout, isMobileV
 
 // --- TAB: PANORAMICA ---
 const TabPanoramica = ({ state, onOpenPreleva }) => {
-  const { available, accrued, periodLabel, daysUntilPayday, greeting } = EMP_PAYROLL_SNAPSHOT;
+  const { available, accrued, periodLabel, daysUntilPayday, greeting, periodStart, today } = EMP_PAYROLL_SNAPSHOT;
   const START_BALANCE = Math.round(available * 0.62);
   const animationRan = useRef(false);
   const [displayBalance, setDisplayBalance] = useState(START_BALANCE);
+
+  const monthToIndex = {
+    gen: 0, feb: 1, mar: 2, apr: 3, mag: 4, giu: 5,
+    lug: 6, ago: 7, set: 8, ott: 9, nov: 10, dic: 11
+  };
+
+  const parseHistoryDate = (dateLabel) => {
+    const [dayRaw, monthRaw, yearRaw] = String(dateLabel || '').split(' ');
+    const day = Number(dayRaw);
+    const month = monthToIndex[(monthRaw || '').toLowerCase()];
+    const year = Number(yearRaw);
+    if (!Number.isFinite(day) || month === undefined || !Number.isFinite(year)) return null;
+    return new Date(year, month, day);
+  };
+
+  const withdrawnThisPeriod = state.history
+    .filter((w) => {
+      const withdrawalDate = parseHistoryDate(w.date);
+      return withdrawalDate && withdrawalDate >= periodStart && withdrawalDate <= today;
+    })
+    .reduce((sum, w) => sum + w.amount, 0);
 
   useEffect(() => {
     if (animationRan.current) return;
@@ -845,7 +868,7 @@ const TabPanoramica = ({ state, onOpenPreleva }) => {
 
       <div className="grid grid-cols-2 gap-3">
         <MetricCard label="Importo maturato finora" value={formatEur(accrued)} />
-        <MetricCard label="Importo gia prelevato nel mese" value={formatEur(state.monthlyWithdrawn)} />
+        <MetricCard label="Prelevato nel periodo" value={formatEur(withdrawnThisPeriod)} />
         <div className="col-span-2">
           <MetricCard label="Giorni al prossimo stipendio" value={`${daysUntilPayday} giorni`} />
         </div>
