@@ -1,0 +1,23 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+/* Ensure the app can fill the viewport */
+#root {
+  min-height: 100vh;
+}
+
+@font-face {
+  font-family: 'RoslindaleDisplayMedium';
+  src: url('/Roslindale%202/RoslindaleDisplay-Medium-Testing.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Utility class for page titles */
+.roslindale-title {
+  font-family: 'RoslindaleDisplayMedium', sans-serif;
+  letter-spacing: -0.035em; /* -3.5% */
+}

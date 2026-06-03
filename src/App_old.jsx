@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar } from "recharts";
 import { LayoutDashboard, Users, Activity, Settings, Search, Bell, Download, ArrowUp, ArrowDown, ArrowUpDown, ChevronRight, ChevronLeft, ChevronDown, ArrowLeft, Upload, FileSpreadsheet, CalendarCheck, Calendar, X, Pencil, Copy, Mail, Phone, Check, ArrowDownToLine, RefreshCw, ClipboardCheck, UserPlus, FileUp, MessageCircle } from "lucide-react";
-import LogoSvg from "./Logo QuandoVuoi.svg";
 
 const FONT_CSS = `
 @font-face {
@@ -142,14 +141,14 @@ function ChartTip({active,payload,label}){
 
 function Donut({active,total}){
   const pct=total>0?active/total:0;
-  const r=56,stroke=18,cx=70,cy=70,sz=140;
+  const r=44,stroke=12,cx=56,cy=56,sz=112;
   const circ=2*Math.PI*r;
   const filled=circ*pct;
   const gap=circ-filled;
   return <div style={{position:"relative",width:sz,height:sz,flexShrink:0}}>
     <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
       <circle cx={cx} cy={cy} r={r} fill="none" stroke={border} strokeWidth={stroke}/>
-      <circle cx={cx} cy={cy} r={r} fill="none" stroke={"#BFE8EC"} strokeWidth={stroke}
+      <circle cx={cx} cy={cy} r={r} fill="none" stroke={P.smeraldo} strokeWidth={stroke}
         strokeDasharray={`${filled} ${gap}`}
         strokeDashoffset={circ*0.25}
         strokeLinecap="round"
@@ -191,7 +190,7 @@ function Btn({children,onClick,variant="lime",style:sx,flex}){
 }
 
 function Card({children,style,accent}){
-  return <div style={{background:accent||P.gesso,borderRadius:18,padding:"20px 24px",border:accent?`1px solid transparent`:`1px solid rgba(15,15,15,0.08)`,position:"relative",overflow:"hidden",...style}}>
+  return <div style={{background:accent||P.gesso,borderRadius:18,padding:"22px 24px",border:accent?"none":`1px solid ${border}`,position:"relative",overflow:"hidden",...style}}>
     {accent&&<><div style={{position:"absolute",top:-25,right:-25,width:90,height:90,borderRadius:"50%",border:"2px solid rgba(15,15,15,0.05)"}}/><div style={{position:"absolute",bottom:-15,left:-15,width:60,height:60,borderRadius:"50%",border:"2px solid rgba(15,15,15,0.04)"}}/></>}
     {children}
   </div>;
@@ -351,9 +350,7 @@ export default function Dashboard(){
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <div style={{width:34,height:34,borderRadius:10,background:P.lime,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="22" height="22" viewBox="0 0 203 203" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M92.149 8.17676C94.1706 -2.72554 109.793 -2.72563 111.814 8.17676L115.892 30.1758C117.338 37.9749 126.854 41.0663 132.608 35.6064L148.837 20.207C156.881 12.5753 169.519 21.7572 164.747 31.7656L155.116 51.96C151.701 59.1195 157.583 67.2138 165.447 66.1787L187.628 63.2598C198.622 61.8137 203.449 76.6701 193.706 81.9619L174.044 92.6377C167.073 96.4228 167.073 106.429 174.044 110.214L193.706 120.891C203.449 126.182 198.621 141.039 187.628 139.593L165.447 136.674C157.582 135.639 151.701 143.733 155.116 150.893L164.747 171.087C169.52 181.095 156.881 190.277 148.837 182.646L132.608 167.245C126.854 161.785 117.338 164.878 115.892 172.677L111.814 194.675C109.793 205.578 94.1702 205.578 92.149 194.675L88.0709 172.677C86.6251 164.878 77.1101 161.786 71.356 167.245L55.1265 182.646C47.0828 190.278 34.4433 181.096 39.2164 171.087L48.8482 150.893C52.2621 143.733 46.3809 135.64 38.5172 136.674L16.3355 139.593C5.34155 141.04 0.513636 126.182 10.2584 120.891L29.9195 110.214C36.8894 106.429 36.8895 96.423 29.9195 92.6377L10.2584 81.9619C0.513514 76.6705 5.34151 61.8128 16.3355 63.2598L38.5172 66.1787C46.3808 67.213 52.2621 59.1191 48.8482 51.96L39.2164 31.7656C34.4429 21.7569 47.0827 12.5743 55.1265 20.207L71.356 35.6064C77.11 41.0658 86.6249 37.9747 88.0709 30.1758L92.149 8.17676ZM117.41 68.8486C117.991 64.6652 112.265 62.8607 110.203 66.5772L106.041 74.0752C104.565 76.7338 100.703 76.7551 99.2564 74.1123L95.1763 66.6572C93.1539 62.9635 87.4094 64.8306 87.9449 69.0078L89.0259 77.4365C89.409 80.4247 86.2725 82.6776 83.5162 81.3945L75.7408 77.7744C71.8877 75.9805 68.317 80.8048 71.2457 83.8477L77.1568 89.9873C79.2519 92.1638 78.0389 95.7881 75.0259 96.3545L66.5259 97.9512C62.3132 98.7425 62.2806 104.684 66.4849 105.43L74.9674 106.935C77.9747 107.468 79.1482 111.08 77.0289 113.279L71.0513 119.483C68.0886 122.558 71.6068 127.345 75.48 125.509L83.2945 121.805C86.0651 120.492 89.1771 122.711 88.7613 125.703L87.5884 134.145C87.0075 138.328 92.7328 140.133 94.7955 136.416L98.9566 128.917C100.432 126.259 104.294 126.238 105.741 128.881L109.821 136.335C111.843 140.029 117.588 138.163 117.052 133.985L115.972 125.557C115.589 122.568 118.726 120.314 121.482 121.598L129.256 125.219C133.11 127.013 136.681 122.187 133.752 119.145L127.841 113.005C125.746 110.828 126.959 107.204 129.972 106.638L138.472 105.041C142.684 104.249 142.717 98.3097 138.513 97.5635L130.03 96.0586C127.023 95.5249 125.849 91.9122 127.968 89.7129L133.947 83.5098C136.909 80.4351 133.391 75.6486 129.518 77.4844L121.704 81.1885C118.933 82.5018 115.82 80.2825 116.236 77.29L117.41 68.8486Z" fill={P.nero}/></svg></div>
           <div>
-            <div>
-              <img src={LogoSvg} alt="QuandoVuoi" style={{height:17,display:"block"}}/>
-            </div>
+            <div style={{fontFamily:fono,fontSize:17,fontWeight:700,color:P.inchiostro,lineHeight:1,letterSpacing:kS}}>QuandoVuoi</div>
             <div style={{fontFamily:pro,fontSize:10,fontWeight:700,color:dm,letterSpacing:kL,textTransform:"uppercase",marginTop:1}}>HR Dashboard</div>
           </div>
         </div>
@@ -386,7 +383,7 @@ export default function Dashboard(){
       {/* Top header bar */}
       <div style={{background:"transparent",borderBottom:`1px solid ${border}`,padding:"0 32px",height:60,display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-            <span style={{fontFamily:pro,fontSize:16,color:dm,cursor:"pointer"}} onClick={()=>{setView("overview");setSel(null);}}>QuandoVuoi</span>
+          <span style={{fontFamily:pro,fontSize:16,color:dm,cursor:"pointer"}} onClick={()=>{setView("overview");setSel(null);}}>QuandoVuoi</span>
           <span style={{color:dm}}>/ </span>
           {sel?<>
             <span style={{fontFamily:pro,fontSize:16,color:dm,cursor:"pointer"}} onClick={()=>setSel(null)}>Dipendenti</span>
@@ -538,146 +535,152 @@ export default function Dashboard(){
         {view==="overview"&&<>
           {/* Title row */}
           <div style={{marginBottom:20}}>
-            <div className="roslindale-title" style={{fontSize:28,fontWeight:700,color:P.inchiostro}}>Dashboard</div>
+            <div style={{fontFamily:fono,fontSize:28,fontWeight:700,color:P.inchiostro,letterSpacing:kM}}>Dashboard</div>
             <div style={{fontFamily:pro,fontSize:16,color:mt,marginTop:4}}>Aprile 2026 · Giorno {day} di {days}</div>
           </div>
 
-          {/* 3-column layout: left metrics · center table · right calendar+chart */}
-          <div style={{display:"grid",gridTemplateColumns:"260px 1fr 300px",gap:12,alignItems:"stretch"}}>
-
-            {/* ── LEFT COLUMN: hero metric + usage ── */}
+          {/* Main grid: left content + calendar */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr 280px",gap:12,marginBottom:14}}>
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              {/* Hero card — Anticipi aprile */}
-              <Card accent={P.lime} style={{display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:240}}>
-                <div>
-                  <Label style={{color:"rgba(15,15,15,0.5)"}}>Anticipi aprile</Label>
-                  <div style={{fontFamily:fono,fontSize:38,fontWeight:700,letterSpacing:kT,marginTop:14,lineHeight:1,color:P.nero}}>€{ta.toLocaleString("it-IT")}</div>
-                  <div style={{fontFamily:pro,fontSize:14,color:"rgba(15,15,15,0.55)",marginTop:8,lineHeight:1.5}}>{um} persone su {ac} attive · media €{avg}</div>
-                </div>
-                <div>
-                  <div style={{height:6,background:"rgba(15,15,15,0.1)",borderRadius:99,overflow:"hidden"}}>
+              {/* Stat cards row */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:12}}>
+                <StatCard label="Dipendenti attivi" value={ac} sub={`su ${EMPLOYEES.length}`} tag={`${invCount} invitati`}/>
+                <StatCard label="Anticipi aprile" value={`€${ta.toLocaleString("it-IT")}`} sub={`${um} persone`} accent={P.lime}/>
+                <StatCard label="Tasso utilizzo" value={`${usage}%`} sub="dei dipendenti attivi"/>
+                <StatCard label="Anticipo medio" value={`€${avg}`} sub="per persona"/>
+              </div>
+
+              {/* Two-column: progress + donut */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                <Card accent={P.ghiaccio}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                    <div>
+                      <Label style={{color:"rgba(15,15,15,0.4)"}}>Avanzamento mese</Label>
+                      <div style={{fontFamily:fono,fontSize:34,fontWeight:700,letterSpacing:kT,marginTop:10,lineHeight:1,color:P.nero}}>{prog}%</div>
+                    </div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontFamily:pro,fontSize:13,color:"rgba(15,15,15,0.4)"}}>Maturato stimato</div>
+                      <div style={{fontFamily:fono,fontSize:20,fontWeight:500,color:P.nero,letterSpacing:kS,marginTop:2}}>€{accrued.toLocaleString("it-IT")}</div>
+                      <div style={{fontFamily:pro,fontSize:13,color:"rgba(15,15,15,0.35)",marginTop:1}}>su €{ts.toLocaleString("it-IT")}</div>
+                    </div>
+                  </div>
+                  <div style={{marginTop:18,height:7,background:"rgba(15,15,15,0.08)",borderRadius:99,overflow:"hidden"}}>
                     <div style={{width:`${prog}%`,height:"100%",background:P.nero,borderRadius:99}}/>
                   </div>
-                  <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}>
-                    <span style={{fontFamily:pro,fontSize:12,color:"rgba(15,15,15,0.5)"}}>{prog}% del mese</span>
-                    <span style={{fontFamily:fono,fontSize:12,fontWeight:500,color:"rgba(15,15,15,0.7)",letterSpacing:kS}}>€{accrued.toLocaleString("it-IT")} maturati</span>
+                  <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+                    <span style={{fontFamily:pro,fontSize:12,opacity:0.35,color:P.nero}}>1 apr</span>
+                    <span style={{fontFamily:pro,fontSize:12,opacity:0.35,color:P.nero}}>30 apr</span>
                   </div>
-                </div>
-              </Card>
+                </Card>
 
-              {/* Usage card with donut */}
-              <Card style={{flex:1,display:"flex",flexDirection:"column",justifyContent:"space-between",overflow:"visible",minHeight:200}}>
-                <div>
-                  <Label>Tasso utilizzo</Label>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginTop:12}}>
-                    <div>
-                      <div style={{fontFamily:fono,fontSize:34,fontWeight:700,color:P.inchiostro,letterSpacing:kT,lineHeight:1}}>{usage}%</div>
-                      <div style={{fontFamily:pro,fontSize:13,color:mt,marginTop:6,lineHeight:1.4}}>{um} su {ac}<br/>dipendenti attivi</div>
+                <Card style={{overflow:"visible"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:28}}>
+                    <div style={{flex:1}}>
+                      <Label>Utilizzo servizio</Label>
+                      <div style={{fontFamily:fono,fontSize:20,fontWeight:500,color:P.inchiostro,marginTop:12,letterSpacing:kS}}>{um} su {ac}</div>
+                      <div style={{fontFamily:pro,fontSize:16,color:mt,marginTop:4,lineHeight:1.5}}>hanno ritirato almeno una volta questo mese</div>
+                      <div style={{display:"flex",gap:14,marginTop:14}}>
+                        {[["Utilizzano",P.smeraldo],["Non utilizzano",border]].map(([l,c])=><div key={l} style={{display:"flex",alignItems:"center",gap:5}}>
+                          <span style={{width:7,height:7,borderRadius:"50%",background:c}}/><span style={{fontFamily:pro,fontSize:13,color:mt}}>{l}</span>
+                        </div>)}
+                      </div>
                     </div>
                     <Donut active={um} total={ac}/>
                   </div>
-                </div>
-                <div style={{display:"flex",gap:14,paddingTop:12,borderTop:`1px solid ${border}`,marginTop:12}}>
-                  {[["Utilizzano","#BFE8EC"],["Non utilizzano",border]].map(([l,c])=><div key={l} style={{display:"flex",alignItems:"center",gap:5}}>
-                    <span style={{width:7,height:7,borderRadius:"50%",background:c}}/><span style={{fontFamily:pro,fontSize:12,color:mt}}>{l}</span>
-                  </div>)}
-                </div>
-              </Card>
+                </Card>
+              </div>
             </div>
 
-            {/* ── CENTER COLUMN: transactions table ── */}
-            <Card style={{display:"flex",flexDirection:"column",paddingTop:18}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
-                <div>
-                  <div style={{fontFamily:fono,fontSize:18,fontWeight:700,color:P.inchiostro,letterSpacing:kS}}>Ultimi movimenti</div>
-                  <div style={{fontFamily:pro,fontSize:13,color:mt,marginTop:2}}>Ritiri delle ultime settimane</div>
-                </div>
-                <Btn onClick={()=>{setView("activity");setActTypeFilter("ritiro");}} variant="ghost" style={{fontSize:13,padding:"6px 14px"}}>Vedi tutti <ChevronRight size={14} strokeWidth={2}/></Btn>
+            {/* Calendar card */}
+            <Card style={{display:"flex",flexDirection:"column"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                <Label>Ciclo paga</Label>
+                <span style={{fontFamily:pro,fontSize:13,color:dm}}>Aprile 2026</span>
               </div>
-
-              {/* Table header */}
-              <div style={{display:"grid",gridTemplateColumns:"1.6fr 1fr 0.9fr 0.9fr",gap:12,padding:"14px 4px 10px",borderBottom:`1px solid ${border}`,marginTop:12}}>
-                {["Dipendente","Data","Stato","Importo"].map(h=><div key={h} style={{fontFamily:pro,fontSize:11,fontWeight:700,color:dm,letterSpacing:kL,textTransform:"uppercase"}}>{h}</div>)}
+              {/* Day headers */}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,textAlign:"center",marginBottom:6}}>
+                {["L","M","M","G","V","S","D"].map((d,i)=><div key={i} style={{fontFamily:pro,fontSize:11,fontWeight:700,color:dm,letterSpacing:"0.05em",padding:"2px 0"}}>{d}</div>)}
               </div>
-
-              {/* Table rows */}
-              <div style={{flex:1}}>
-                {ACTIVITY.filter(a=>a.type==="ritiro").slice(0,10).map((a,i)=>{
-                  const emp=EMPLOYEES.find(e=>e.name===a.who);
-                  const role=emp?emp.role:"—";
-                  return <div key={i} style={{display:"grid",gridTemplateColumns:"1.6fr 1fr 0.9fr 0.9fr",gap:12,padding:"12px 4px",borderBottom:`1px solid ${border}`,alignItems:"center"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10,minWidth:0}}>
-                      <div style={{width:32,height:32,borderRadius:"50%",background:P.avena,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:pro,fontSize:11,fontWeight:700,color:mt,flexShrink:0}}>{a.who.split(" ").map(n=>n[0]).join("")}</div>
-                      <div style={{minWidth:0}}>
-                        <div style={{fontFamily:pro,fontSize:14,fontWeight:500,color:P.inchiostro,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.who}</div>
-                        <div style={{fontFamily:pro,fontSize:12,color:dm,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{role}</div>
-                      </div>
-                    </div>
-                    <div style={{fontFamily:pro,fontSize:13,color:mt}}>{a.time}</div>
-                    <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{width:6,height:6,borderRadius:"50%",background:"#17AB82"}}/>
-                      <span style={{fontFamily:pro,fontSize:13,color:P.inchiostro}}>Ritirato</span>
-                    </div>
-                    <div style={{fontFamily:fono,fontSize:15,fontWeight:500,color:P.inchiostro,letterSpacing:kS,textAlign:"right"}}>{a.amount}</div>
+              {/* Calendar grid — April 2026 starts on Wednesday (offset 2) */}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,textAlign:"center",flex:1,alignContent:"start"}}>
+                {Array(2).fill(null).map((_,i)=><div key={`e${i}`}/>)}
+                {Array.from({length:30},(_,i)=>i+1).map(d=>{
+                  const isToday=d===day;
+                  const isPayday=d===days;
+                  const isPast=d<day;
+                  const bg=isToday?P.nero:isPayday?P.lime:isPast?P.avena:"transparent";
+                  const color=isToday?P.bianco:isPayday?P.nero:P.inchiostro;
+                  const opacity=!isPast&&!isToday&&!isPayday?0.35:1;
+                  return <div key={d} style={{
+                    fontFamily:fono,fontSize:13,fontWeight:isToday||isPayday?700:500,
+                    color,opacity,background:bg,
+                    borderRadius:8,padding:"5px 0",lineHeight:1.4,
+                  }}>
+                    {d}
                   </div>;
                 })}
               </div>
+              {/* Legend */}
+              <div style={{display:"flex",flexWrap:"wrap",gap:10,marginTop:14,paddingTop:12,borderTop:`1px solid ${border}`}}>
+                {[["Oggi",P.nero],["Busta paga",P.lime],["Maturato",P.avena]].map(([l,c])=><div key={l} style={{display:"flex",alignItems:"center",gap:4}}>
+                  <span style={{width:8,height:8,borderRadius:3,background:c,border:c===P.avena?`1px solid ${border}`:"none"}}/><span style={{fontFamily:pro,fontSize:11,color:dm}}>{l}</span>
+                </div>)}
+              </div>
+            </Card>
+          </div>
+
+          {/* Feed + Charts */}
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr",gap:12}}>
+            <Card>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                <Label>Ultimi ritiri</Label>
+                <Btn onClick={()=>{setView("activity");setActTypeFilter("ritiro");}} variant="ghost" style={{fontSize:13,padding:"6px 14px"}}>Vedi tutti <ChevronRight size={14} strokeWidth={2}/></Btn>
+              </div>
+              <div>
+                {ACTIVITY.filter(a=>a.type==="ritiro").slice(0,10).map((a,i,arr)=><div key={i} style={{padding:"10px 0",borderBottom:i<arr.length-1?`1px solid ${border}`:"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:30,height:30,borderRadius:8,background:P.avena,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:pro,fontSize:11,fontWeight:700,color:mt,flexShrink:0}}>{a.who.split(" ").map(n=>n[0]).join("")}</div>
+                    <div>
+                      <div style={{fontFamily:pro,fontSize:16,fontWeight:500,color:P.inchiostro}}>{a.who}</div>
+                      <div style={{fontFamily:pro,fontSize:12,color:dm}}>{a.time}</div>
+                    </div>
+                  </div>
+                  <div style={{fontFamily:fono,fontSize:16,fontWeight:500,color:P.inchiostro,letterSpacing:kS}}>{a.amount}</div>
+                </div>)}
+              </div>
             </Card>
 
-            {/* ── RIGHT COLUMN: calendar + chart ── */}
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
-              {/* Pay cycle calendar */}
-              <Card style={{display:"flex",flexDirection:"column",paddingTop:20}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                  <Label>Ciclo paga</Label>
-                  <span style={{fontFamily:pro,fontSize:12,color:dm}}>Aprile 2026</span>
+              <Card style={{flex:1,display:"flex",flexDirection:"column"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                  <Label>Volume anticipi</Label>
+                  <span style={{fontFamily:pro,fontSize:12,color:dm}}>6 mesi</span>
                 </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,textAlign:"center",marginBottom:4}}>
-                  {["L","M","M","G","V","S","D"].map((d,i)=><div key={i} style={{fontFamily:pro,fontSize:10,fontWeight:700,color:dm,letterSpacing:"0.05em",padding:"2px 0"}}>{d}</div>)}
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:2,textAlign:"center"}}>
-                  {Array(2).fill(null).map((_,i)=><div key={`e${i}`}/>)}
-                  {Array.from({length:30},(_,i)=>i+1).map(d=>{
-                    const isToday=d===day;
-                    const isPayday=d===days;
-                    const isPast=d<day;
-                    const bg=isToday?P.nero:isPayday?P.lime:isPast?P.avena:"transparent";
-                    const color=isToday?P.bianco:isPayday?P.nero:P.inchiostro;
-                    const opacity=!isPast&&!isToday&&!isPayday?0.35:1;
-                    return <div key={d} style={{
-                      fontFamily:fono,fontSize:12,fontWeight:isToday||isPayday?700:500,
-                      color,opacity,background:bg,
-                      borderRadius:7,padding:"4px 0",lineHeight:1.4,
-                    }}>
-                      {d}
-                    </div>;
-                  })}
-                </div>
-                <div style={{display:"flex",flexWrap:"wrap",gap:10,marginTop:12,paddingTop:10,borderTop:`1px solid ${border}`}}>
-                  {[["Oggi",P.nero],["Busta paga",P.lime],["Maturato",P.avena]].map(([l,c])=><div key={l} style={{display:"flex",alignItems:"center",gap:4}}>
-                    <span style={{width:7,height:7,borderRadius:2,background:c,border:c===P.avena?`1px solid ${border}`:"none"}}/><span style={{fontFamily:pro,fontSize:11,color:dm}}>{l}</span>
-                  </div>)}
+                <div style={{height:180}}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={MONTHLY} margin={{top:10,right:4,bottom:0,left:-20}}>
+                      <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.lime} stopOpacity={0.25}/><stop offset="100%" stopColor={P.lime} stopOpacity={0}/></linearGradient></defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={border} vertical={false}/>
+                      <XAxis dataKey="month" tick={{fontSize:11,fill:dm,fontFamily:pro}} axisLine={false} tickLine={false}/>
+                      <YAxis tick={{fontSize:10,fill:dm,fontFamily:mono}} axisLine={false} tickLine={false} tickFormatter={v=>`€${(v/1000).toFixed(0)}k`}/>
+                      <Tooltip content={<ChartTip/>} cursor={{stroke:border,strokeDasharray:"4 4"}}/>
+                      <Area type="monotone" dataKey="advances" stroke={P.inchiostro} strokeWidth={1.5} fill="url(#lg)" dot={{r:3,fill:P.inchiostro,stroke:"none"}} activeDot={{r:5,fill:P.inchiostro,stroke:P.gesso,strokeWidth:2}}/>
+                    </AreaChart>
+                  </ResponsiveContainer>
                 </div>
               </Card>
 
-              {/* Volume chart */}
-              <Card style={{flex:1,display:"flex",flexDirection:"column",paddingTop:20,minHeight:200}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                  <Label>Volume anticipi</Label>
-                  <span style={{fontFamily:pro,fontSize:11,color:dm}}>6 mesi</span>
-                </div>
-                <div style={{fontFamily:fono,fontSize:22,fontWeight:700,color:P.inchiostro,letterSpacing:kS,marginTop:10,lineHeight:1}}>€{MONTHLY.reduce((s,m)=>s+m.advances,0).toLocaleString("it-IT")}</div>
-                <div style={{fontFamily:pro,fontSize:12,color:mt,marginTop:3}}>totale ultimo semestre</div>
-                <div style={{flex:1,minHeight:120,marginTop:10}}>
+              <Card style={{flex:1,display:"flex",flexDirection:"column"}}>
+                <Label>Ritiri settimanali</Label>
+                <div style={{height:180,marginTop:12}}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={MONTHLY} margin={{top:6,right:0,bottom:0,left:-28}}>
-                      <defs><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={P.lime} stopOpacity={0.35}/><stop offset="100%" stopColor={P.lime} stopOpacity={0}/></linearGradient></defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke={border} vertical={false}/>
-                      <XAxis dataKey="month" tick={{fontSize:10,fill:dm,fontFamily:pro}} axisLine={false} tickLine={false}/>
-                      <YAxis tick={{fontSize:9,fill:dm,fontFamily:mono}} axisLine={false} tickLine={false} tickFormatter={v=>`${(v/1000).toFixed(0)}k`}/>
-                      <Tooltip content={<ChartTip/>} cursor={{stroke:border,strokeDasharray:"4 4"}}/>
-                      <Area type="monotone" dataKey="advances" stroke={P.inchiostro} strokeWidth={1.5} fill="url(#lg)" dot={{r:2.5,fill:P.inchiostro,stroke:"none"}} activeDot={{r:4,fill:P.inchiostro,stroke:P.gesso,strokeWidth:2}}/>
-                    </AreaChart>
+                    <BarChart data={WEEKLY} margin={{top:4,right:4,bottom:0,left:-20}}>
+                      <CartesianGrid strokeDasharray="3 3" stroke={border}/>
+                      <XAxis dataKey="d" tick={{fontSize:11,fill:dm,fontFamily:pro}} axisLine={false} tickLine={false}/>
+                      <YAxis tick={{fontSize:10,fill:dm,fontFamily:mono}} axisLine={false} tickLine={false} tickFormatter={v=>`€${(v/1000).toFixed(0)}k`}/>
+                      <Tooltip content={<ChartTip/>} cursor={{fill:P.avena}}/>
+                      <Bar dataKey="v" fill={P.lime} radius={[6,6,0,0]}/>
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </Card>
@@ -772,7 +775,7 @@ export default function Dashboard(){
                     <span style={{fontFamily:pro,fontSize:16,fontWeight:700,color:P.inchiostro,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.name}</span>
                   </div></td>
                   <td style={{padding:"12px 24px",fontFamily:pro,fontSize:16,color:mt,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.role}</td>
-                  <td style={{padding:"12px 24px",fontFamily:fono,fontSize:16,fontWeight:500,letterSpacing:kS,color:P.inchiostro}}>€{e.salary.toLocaleString("it-IT")}</td>
+                  <td style={{padding:"12px 24px",fontFamily:mono,fontSize:14,color:P.inchiostro}}>€{e.salary.toLocaleString("it-IT")}</td>
                   <td style={{padding:"12px 24px",fontFamily:fono,fontSize:16,fontWeight:500,letterSpacing:kS,color:e.advanced>0?P.inchiostro:dm}}>€{e.advanced}</td>
                   <td style={{padding:"12px 24px"}}><ProgressBar current={e.advanced} max={e.salary*0.5}/></td>
                   <td style={{padding:"12px 24px"}}><Badge status={e.status}/></td>
@@ -1097,7 +1100,7 @@ export default function Dashboard(){
           <div style={{fontFamily:fono,fontSize:28,fontWeight:700,color:P.inchiostro,letterSpacing:kM,marginBottom:20}}>Impostazioni</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
             <Card>
-              <div style={{fontFamily:fono,fontSize:20,fontWeight:700,color:P.inchiostro,letterSpacing:kS,marginBottom:20}}>Configurazione</div>
+              <div style={{fontFamily:fono,fontSize:20,fontWeight:500,color:P.inchiostro,letterSpacing:kS,marginBottom:20}}>Configurazione</div>
               {[["Cap ritiro","50% del netto"],["Frequenza ritiri","Giornaliera"],["Importo minimo","€50"],["Settlement","Ultimo giorno del mese"],["Piano","Piano Azienda"]].map(([l,v],i)=>
                 <div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 0",borderBottom:i<4?`1px solid ${border}`:"none"}}>
                   <span style={{fontFamily:pro,fontSize:16,color:P.inchiostro}}>{l}</span>
@@ -1133,7 +1136,7 @@ export default function Dashboard(){
           <Card>
             <div style={{display:"flex",alignItems:"stretch",gap:24}}>
               <div style={{flex:1,display:"flex",flexDirection:"column"}}>
-                <div style={{fontFamily:fono,fontSize:20,fontWeight:700,color:P.inchiostro,letterSpacing:kS}}>Supporto</div>
+                <div style={{fontFamily:fono,fontSize:20,fontWeight:500,color:P.inchiostro,letterSpacing:kS}}>Supporto</div>
                 <div style={{fontFamily:pro,fontSize:16,color:mt,marginTop:8,lineHeight:1.6}}>Hai domande sulla configurazione, sul pricing o sull'integrazione? Il nostro team è disponibile dal lunedì al venerdì, 9:00–18:00.</div>
                 <div style={{display:"flex",gap:8,marginTop:20}}>
                   <Btn variant="nero" style={{fontSize:14,padding:"10px 20px"}}><Mail size={16} strokeWidth={2}/> Scrivici</Btn>
