@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { LayoutDashboard, Users, Activity, Settings, Search, Bell, Download, ArrowUp, ArrowDown, ArrowUpDown, ChevronRight, ChevronLeft, ChevronDown, ArrowLeft, Upload, FileSpreadsheet, CalendarCheck, Calendar, X, Pencil, Copy, Mail, Phone, Check, ArrowDownToLine, RefreshCw, ClipboardCheck, UserPlus, FileUp, MessageCircle } from "lucide-react";
 import LogoSvg from "./Logo QuandoVuoi.svg";
+import NoiseMapSvg from "../Noise Map 2.svg";
 
 const FONT_CSS = `
 @font-face {
@@ -190,9 +191,9 @@ function Btn({children,onClick,variant="lime",style:sx,flex}){
   }}>{children}</button>;
 }
 
-function Card({children,style,accent}){
+function Card({children,style,accent,noDecor}){
   return <div style={{background:accent||P.gesso,borderRadius:18,padding:"20px 24px",border:accent?`1px solid transparent`:`1px solid rgba(15,15,15,0.08)`,position:"relative",overflow:"hidden",...style}}>
-    {accent&&<><div style={{position:"absolute",top:-25,right:-25,width:90,height:90,borderRadius:"50%",border:"2px solid rgba(15,15,15,0.05)"}}/><div style={{position:"absolute",bottom:-15,left:-15,width:60,height:60,borderRadius:"50%",border:"2px solid rgba(15,15,15,0.04)"}}/></>}
+    {accent&&!noDecor&&<><div style={{position:"absolute",top:-25,right:-25,width:90,height:90,borderRadius:"50%",border:"2px solid rgba(15,15,15,0.05)"}}/><div style={{position:"absolute",bottom:-15,left:-15,width:60,height:60,borderRadius:"50%",border:"2px solid rgba(15,15,15,0.04)"}}/></>}
     {children}
   </div>;
 }
@@ -342,19 +343,23 @@ export default function Dashboard(){
 
   const breadcrumb={overview:"Dashboard",employees:"Dipendenti",activity:"Attività",settings:"Impostazioni"};
 
-  return <div style={{fontFamily:pro,background:P.avena,minHeight:"100vh",color:P.inchiostro,display:"flex",letterSpacing:k}}>
+  return <div style={{fontFamily:pro,background:P.avena,minHeight:"100vh",color:P.inchiostro,display:"flex",letterSpacing:k,position:"relative",isolation:"isolate",overflow:"hidden"}}>
+    <img
+      src={NoiseMapSvg}
+      alt=""
+      aria-hidden="true"
+      style={{position:"fixed",inset:0,width:"100%",height:"100%",objectFit:"cover",pointerEvents:"none",zIndex:0,opacity:0.18,mixBlendMode:"multiply"}}
+    />
 
     {/* ═ SIDEBAR ═ */}
-    <div style={{width:250,background:"transparent",display:"flex",flexDirection:"column",flexShrink:0,borderRight:`1px solid ${border}`}}>
+    <div style={{width:250,background:"transparent",display:"flex",flexDirection:"column",flexShrink:0,borderRight:`1px solid ${border}`,position:"relative",zIndex:1}}>
       {/* Logo */}
-      <div style={{padding:"24px 20px",borderBottom:`1px solid ${border}`}}>
+      <div style={{padding:"20px 20px",borderBottom:`1px solid ${border}`}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <div style={{width:34,height:34,borderRadius:10,background:P.lime,display:"flex",alignItems:"center",justifyContent:"center"}}><svg width="22" height="22" viewBox="0 0 203 203" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M92.149 8.17676C94.1706 -2.72554 109.793 -2.72563 111.814 8.17676L115.892 30.1758C117.338 37.9749 126.854 41.0663 132.608 35.6064L148.837 20.207C156.881 12.5753 169.519 21.7572 164.747 31.7656L155.116 51.96C151.701 59.1195 157.583 67.2138 165.447 66.1787L187.628 63.2598C198.622 61.8137 203.449 76.6701 193.706 81.9619L174.044 92.6377C167.073 96.4228 167.073 106.429 174.044 110.214L193.706 120.891C203.449 126.182 198.621 141.039 187.628 139.593L165.447 136.674C157.582 135.639 151.701 143.733 155.116 150.893L164.747 171.087C169.52 181.095 156.881 190.277 148.837 182.646L132.608 167.245C126.854 161.785 117.338 164.878 115.892 172.677L111.814 194.675C109.793 205.578 94.1702 205.578 92.149 194.675L88.0709 172.677C86.6251 164.878 77.1101 161.786 71.356 167.245L55.1265 182.646C47.0828 190.278 34.4433 181.096 39.2164 171.087L48.8482 150.893C52.2621 143.733 46.3809 135.64 38.5172 136.674L16.3355 139.593C5.34155 141.04 0.513636 126.182 10.2584 120.891L29.9195 110.214C36.8894 106.429 36.8895 96.423 29.9195 92.6377L10.2584 81.9619C0.513514 76.6705 5.34151 61.8128 16.3355 63.2598L38.5172 66.1787C46.3808 67.213 52.2621 59.1191 48.8482 51.96L39.2164 31.7656C34.4429 21.7569 47.0827 12.5743 55.1265 20.207L71.356 35.6064C77.11 41.0658 86.6249 37.9747 88.0709 30.1758L92.149 8.17676ZM117.41 68.8486C117.991 64.6652 112.265 62.8607 110.203 66.5772L106.041 74.0752C104.565 76.7338 100.703 76.7551 99.2564 74.1123L95.1763 66.6572C93.1539 62.9635 87.4094 64.8306 87.9449 69.0078L89.0259 77.4365C89.409 80.4247 86.2725 82.6776 83.5162 81.3945L75.7408 77.7744C71.8877 75.9805 68.317 80.8048 71.2457 83.8477L77.1568 89.9873C79.2519 92.1638 78.0389 95.7881 75.0259 96.3545L66.5259 97.9512C62.3132 98.7425 62.2806 104.684 66.4849 105.43L74.9674 106.935C77.9747 107.468 79.1482 111.08 77.0289 113.279L71.0513 119.483C68.0886 122.558 71.6068 127.345 75.48 125.509L83.2945 121.805C86.0651 120.492 89.1771 122.711 88.7613 125.703L87.5884 134.145C87.0075 138.328 92.7328 140.133 94.7955 136.416L98.9566 128.917C100.432 126.259 104.294 126.238 105.741 128.881L109.821 136.335C111.843 140.029 117.588 138.163 117.052 133.985L115.972 125.557C115.589 122.568 118.726 120.314 121.482 121.598L129.256 125.219C133.11 127.013 136.681 122.187 133.752 119.145L127.841 113.005C125.746 110.828 126.959 107.204 129.972 106.638L138.472 105.041C142.684 104.249 142.717 98.3097 138.513 97.5635L130.03 96.0586C127.023 95.5249 125.849 91.9122 127.968 89.7129L133.947 83.5098C136.909 80.4351 133.391 75.6486 129.518 77.4844L121.704 81.1885C118.933 82.5018 115.82 80.2825 116.236 77.29L117.41 68.8486Z" fill={P.nero}/></svg></div>
           <div>
             <div>
-              <img src={LogoSvg} alt="QuandoVuoi" style={{height:17,display:"block"}}/>
+              <img src={LogoSvg} alt="QuandoVuoi" style={{height:20,display:"block"}}/>
             </div>
-            <div style={{fontFamily:pro,fontSize:10,fontWeight:700,color:dm,letterSpacing:kL,textTransform:"uppercase",marginTop:1}}>HR Dashboard</div>
           </div>
         </div>
       </div>
@@ -381,7 +386,7 @@ export default function Dashboard(){
     </div>
 
     {/* ═ CONTENT ═ */}
-    <div style={{flex:1,display:"flex",flexDirection:"column",height:"100vh"}}>
+    <div style={{flex:1,display:"flex",flexDirection:"column",height:"100vh",position:"relative",zIndex:1}}>
 
       {/* Top header bar */}
       <div style={{background:"transparent",borderBottom:`1px solid ${border}`,padding:"0 32px",height:60,display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
@@ -548,7 +553,7 @@ export default function Dashboard(){
             {/* ── LEFT COLUMN: hero metric + usage ── */}
             <div style={{display:"flex",flexDirection:"column",gap:12}}>
               {/* Hero card — Anticipi aprile */}
-              <Card accent={P.lime} style={{display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:240}}>
+              <Card accent={P.lime} noDecor style={{display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:240}}>
                 <div>
                   <Label style={{color:"rgba(15,15,15,0.5)"}}>Anticipi aprile</Label>
                   <div style={{fontFamily:fono,fontSize:38,fontWeight:700,letterSpacing:kT,marginTop:14,lineHeight:1,color:P.nero}}>€{ta.toLocaleString("it-IT")}</div>
@@ -570,11 +575,13 @@ export default function Dashboard(){
                 <div>
                   <Label>Tasso utilizzo</Label>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginTop:12}}>
-                    <div>
+                    <div style={{flex:1}}>
                       <div style={{fontFamily:fono,fontSize:34,fontWeight:700,color:P.inchiostro,letterSpacing:kT,lineHeight:1}}>{usage}%</div>
-                      <div style={{fontFamily:pro,fontSize:13,color:mt,marginTop:6,lineHeight:1.4}}>{um} su {ac}<br/>dipendenti attivi</div>
+                      <div style={{fontFamily:pro,fontSize:13,color:mt,marginTop:6,lineHeight:1.4}}>{um} su {ac} dipendenti attivi</div>
+                      <div style={{display:"flex",justifyContent:"center",marginTop:12}}>
+                        <Donut active={um} total={ac}/>
+                      </div>
                     </div>
-                    <Donut active={um} total={ac}/>
                   </div>
                 </div>
                 <div style={{display:"flex",gap:14,paddingTop:12,borderTop:`1px solid ${border}`,marginTop:12}}>
@@ -689,7 +696,7 @@ export default function Dashboard(){
         {view==="employees"&&!sel&&<>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
             <div>
-              <div style={{fontFamily:fono,fontSize:28,fontWeight:700,color:P.inchiostro,letterSpacing:kM}}>Dipendenti</div>
+              <div className="roslindale-title" style={{fontFamily:fono,fontSize:28,fontWeight:700,color:P.inchiostro,letterSpacing:kM}}>Dipendenti</div>
               <div style={{fontFamily:pro,fontSize:16,color:mt,marginTop:4}}>{EMPLOYEES.length} totali · {ac} attivi · {invCount} invitati · {pauseCount} in pausa</div>
             </div>
             <div style={{display:"flex",gap:8,alignItems:"center"}}>
@@ -987,7 +994,7 @@ export default function Dashboard(){
           return <>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20}}>
             <div>
-              <div style={{fontFamily:fono,fontSize:28,fontWeight:700,color:P.inchiostro,letterSpacing:kM}}>Attività</div>
+              <div className="roslindale-title" style={{fontFamily:fono,fontSize:28,fontWeight:700,color:P.inchiostro,letterSpacing:kM}}>Attività</div>
               <div style={{fontFamily:pro,fontSize:16,color:mt,marginTop:4}}>{ACTIVITY.length} eventi registrati</div>
             </div>
           </div>
@@ -1094,7 +1101,7 @@ export default function Dashboard(){
 
         {/* ═ SETTINGS ═ */}
         {view==="settings"&&<>
-          <div style={{fontFamily:fono,fontSize:28,fontWeight:700,color:P.inchiostro,letterSpacing:kM,marginBottom:20}}>Impostazioni</div>
+          <div className="roslindale-title" style={{fontFamily:fono,fontSize:28,fontWeight:700,color:P.inchiostro,letterSpacing:kM,marginBottom:20}}>Impostazioni</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
             <Card>
               <div style={{fontFamily:fono,fontSize:20,fontWeight:700,color:P.inchiostro,letterSpacing:kS,marginBottom:20}}>Configurazione</div>
